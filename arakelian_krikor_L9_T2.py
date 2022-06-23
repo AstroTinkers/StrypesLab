@@ -1,32 +1,6 @@
 import unittest
-
-
-def f(x):
-    return x**3 + 3*x - 5
-
-
-def bisection(a, b, func):
-    error_margin = 0.001
-    while True:
-        try:
-            a = int(a)
-            b = int(b)
-
-            c = (a + b) / 2
-
-            if error_margin >= f(c):
-                return c
-
-            elif func(a) * func(c) <= 0:
-                b = c
-
-            elif func(b) * func(c) <= 0:
-                a = c
-            else:
-                raise Exception("Values must not both be positive or negative!")
-        except ValueError:
-            print("Values must be valid numbers(integers)")
-            break
+from arakelian_krikor_L9_T1 import bisection
+from arakelian_krikor_L9_T1 import f
 
 
 class TestBisection(unittest.TestCase):

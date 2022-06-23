@@ -1,13 +1,12 @@
 import sys
-from collections import deque
+
 
 def printMaze(maze_to_print):
     for row in maze_to_print:
         print("".join(row))
 
 
-def solveMaze(maze, x, y):
-
+def solveMaze(maze_to_walk, x, y):
 
 
 maze = [['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'],
@@ -22,5 +21,5 @@ maze = [['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '
         ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#']]
 
 
-solveMaze(maze, 2, 3)
+solveMaze(maze, sys.argv[1], sys.argv[2])
 printMaze(maze)
