@@ -5,6 +5,7 @@ with open(sys.argv[1], 'r') as file:
         key, value = line.split(":")
         value = value.strip("\n")
         stem_dict[key] = value
-for value in stem_dict.values():
-    if value.lower() in sys.argv[2]:
-        print(value)
+if sys.argv[2] in stem_dict:
+    print(stem_dict[sys.argv[2]])
+else:
+    print("Not found.")
