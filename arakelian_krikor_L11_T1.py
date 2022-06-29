@@ -3,36 +3,32 @@ from tkinter import *
 from tkinter import ttk
 
 
-def bmi_calc(*args):
+def bmi_calc():
     # Function to calculate the BMI index
     bmi_height = int(height_entry.get())
     bmi_weight = int(weight_entry.get())
     result.set(f'{bmi_weight / ((bmi_height/100)**2):.2f}')
 
 
-def update_graph():
+def update_graph(graphs, res):
     # Function to update graph image
-    global graph_L
-    if result.get():
-        if float(result.get()) < 18.5:
-            graph_L.configure(image=graph_1, justify=CENTER, background='#26a69a')
-        if float(result.get()) < 25:
-            graph_L.configure(image=graph_2, justify=CENTER, background='#26a69a')
-        if float(result.get()) < 30:
-            graph_L.configure(image=graph_3, justify=CENTER, background='#26a69a')
-        if float(result.get()) < 35:
-            graph_L.configure(image=graph_4, justify=CENTER, background='#26a69a')
-        if float(result.get()) < 40:
-            graph_L.configure(image=graph_5, justify=CENTER, background='#26a69a')
+    if res:
+        graph_values = [18.5, 25, 30, 35, 40]
+        for bmi_index in graph_values:
+            if res < bmi_index:
+                index = graph_values.index(bmi_index) + 1
+                break
         else:
-            graph_L.configure(image=graph_6, justify=CENTER, background='#26a69a')
+            index = 6
+        graphs.configure(image=graphics[index], justify=CENTER, background=MAIN_COLOR)
 
 
 # Main window of app
 main_window = Tk()
 main_window.title('BMI Calculator')
-main_window.configure(background='#26a69a')
-frame = tkinter.Frame(main_window, width=400, height=200, background='#26a69a')
+MAIN_COLOR = '#26a69a'
+main_window.configure(background=MAIN_COLOR)
+frame = tkinter.Frame(main_window, width=420, height=200, background=MAIN_COLOR)
 frame.grid(columnspan=2, rowspan=5, sticky='nwe')
 frame.columnconfigure(0, weight=3)
 # Main window icon
@@ -50,10 +46,10 @@ main_window.geometry(f'{mw_width}x{mw_height}+{scr_center_x}+{scr_center_y}')
 main_window.resizable(False, False)
 
 # Input labels and fields
-height_L = Label(main_window, bg='#26a69a', fg='white', font='Verdana', text='Please input you height in cm:')
-height_L.grid(column=0, row=0, sticky='w', padx=6, pady=2)
-weight_L = Label(main_window, bg='#26a69a', fg='white', font='Verdana', text='Please input you weight in kg:')
-weight_L.grid(column=0, row=1, sticky='w', padx=6, pady=2)
+height_label = Label(main_window, bg=MAIN_COLOR, fg='white', font='Verdana', text='Please input you height in cm:')
+height_label.grid(column=0, row=0, sticky='w', padx=6, pady=2)
+weight_label = Label(main_window, bg=MAIN_COLOR, fg='white', font='Verdana', text='Please input you weight in kg:')
+weight_label.grid(column=0, row=1, sticky='w', padx=6, pady=2)
 
 height = StringVar()
 height_entry = Entry(main_window, bg='white', bd=4, font='Verdana', justify='right', width=4)
@@ -62,28 +58,22 @@ weight_entry = Entry(main_window, bg='white', bd=4, font='Verdana', justify='rig
 weight_entry.grid(column=1, row=1, sticky='e', padx=6, pady=2)
 
 # Button to calculate BMI index
-calc_button = Button(main_window, text='Calculate', font='Verdana', command=lambda: [bmi_calc(), update_graph()],
+calc_button = Button(main_window, text='Calculate',
+                     font='Verdana', command=lambda: [bmi_calc(), update_graph(graph_label, float(result.get()))],
                      height=1, relief=RAISED, justify=CENTER)
 calc_button.grid(column=0, columnspan=2, row=2, sticky='we', padx=6, pady=4)
 # Bind 'Enter' key to Calculate button
-main_window.bind('<Return>', lambda x: [bmi_calc(), update_graph()])
+main_window.bind('<Return>', lambda x: [bmi_calc(), update_graph(graph_label, float(result.get()))])
 
 
 # Images to show
-graph_0 = PhotoImage(file='./BMI/0.png')
-graph_1 = PhotoImage(file='./BMI/1.png')
-graph_2 = PhotoImage(file='./BMI/2.png')
-graph_3 = PhotoImage(file='./BMI/3.png')
-graph_4 = PhotoImage(file='./BMI/4.png')
-graph_5 = PhotoImage(file='./BMI/5.png')
-graph_6 = PhotoImage(file='./BMI/6.png')
-graph = graph_0
-graph_L = Label(main_window)
-graph_L.grid(column=0, columnspan=3, row=3, padx=1, pady=4)
-graph_L.configure(image=graph, justify=CENTER, background='#26a69a')
+graphics = [PhotoImage(file=f"./BMI/{i}.png") for i in range(0, 7)]
+graph_label = Label(main_window)
+graph_label.grid(column=0, columnspan=3, row=3, padx=1, pady=4)
+graph_label.configure(image=graphics[0], justify=CENTER, background=MAIN_COLOR)
 
 result = StringVar()
-ttk.Label(main_window, textvariable=result, font='Verdana', foreground='white', background='#26a69a', justify=CENTER) \
+ttk.Label(main_window, textvariable=result, font='Verdana', foreground='white', background=MAIN_COLOR, justify=CENTER) \
     .grid(column=0, columnspan=3, row=4, padx=6, pady=4)
 
 # Set the cursor to the first input upon starting the app
