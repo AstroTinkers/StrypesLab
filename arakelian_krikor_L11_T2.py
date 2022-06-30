@@ -29,7 +29,7 @@ class Hangman:
             self.tries_remaining -= 1
 
     def word_to_print(self):
-        return "".join(self.word_to_show)
+        return " ".join(self.word_to_show)
 
     def have_won(self):
         return "_" not in self.word_to_show and self.tries_remaining > 0
