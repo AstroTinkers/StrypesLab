@@ -52,9 +52,9 @@ weight_label = Label(main_window, bg=MAIN_COLOR, fg='white', font='Verdana', tex
 weight_label.grid(column=0, row=1, sticky='w', padx=6, pady=2)
 
 height = StringVar()
-height_entry = Entry(main_window, bg='white', bd=4, font='Verdana', justify='right', width=4)
+height_entry = Entry(main_window, bg='white', fg='black', bd=4, font='Verdana', justify='right', width=4)
 height_entry.grid(column=1, row=0, sticky='e', padx=6, pady=2)
-weight_entry = Entry(main_window, bg='white', bd=4, font='Verdana', justify='right', width=4)
+weight_entry = Entry(main_window, bg='white', fg='black', bd=4, font='Verdana', justify='right', width=4)
 weight_entry.grid(column=1, row=1, sticky='e', padx=6, pady=2)
 
 # Button to calculate BMI index
