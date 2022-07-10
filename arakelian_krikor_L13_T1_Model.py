@@ -46,8 +46,16 @@ class EntityService:
         self._store.append(entity)
         return True
 
+    def add_multiple(self, entities):
+        self._store.extend([entity for entity in entities])
+
     def del_entry(self, entity: Entity):
         self._store.remove(entity)
+
+    def get_by_title(self, title: str):
+        for entity in self._store:
+            if entity.title.lower() == title.lower():
+                return entity
 
     def get_all(self):
         return self._store
@@ -98,16 +106,21 @@ class GlobalData:
         try:
             with open("database.txt", "r") as database:
                 content = json.load(database)
-            self.movies = [Movie(m["title"], m["genre"], m["release_year"], m["length"]) for m in content["Movies"]]
-            self.games = [Game(g["title"], g["publisher"], g["platform"], g["genre"], g["release_year"]) for g in content["Games"]]
-            self.books = [Book(b["title"], b["author"], b["publisher"], b["isbn"], b["release_year"]) for b in content["Books"]]
-            database.close()
+
         except json.decoder.JSONDecodeError:
-            self.movies = None
-            self.games = None
-            self.books = None
-        return {
-            "Movies": self.movies,
-            "Games": self.games,
-            "Books": self.books
-        }
+            return
+        else:
+            self.movies.add_multiple([Movie(m["title"], m["genre"], m["release_year"], m["length"]) for m in content["Movies"]])
+            self.games.add_multiple([Game(g["title"], g["publisher"], g["platform"], g["genre"], g["release_year"]) for g in content["Games"]])
+            self.books.add_multiple([Book(b["title"], b["author"], b["publisher"], b["isbn"], b["release_year"]) for b in content["Books"]])
+            database.close()
+
+
+
+# gd = GlobalData()
+# gd.movies.add_entry(Movie("Terminator", "Action", 1989, 125))
+# gd.movies.add_entry(Movie("Terminator 2", "Action", 1989, 125))
+# gd.movies.add_entry(Movie("Terminator 3", "Action", 1989, 125))
+# gd.movies.add_entry(Movie("Terminator 4", "Action", 1989, 125))
+# gd.write()
+#

@@ -3,9 +3,16 @@ from tkinter import *
 
 def num_press(num):
     global display_num
+    operators = [".", "+", "*", "/"]
     if display_num == "0":
         display_num = ""
-    display_num = display_num + str(num)
+    if len(display_num) > 0:
+        if num in operators and display_num[-1] in operators:
+            display_num = display_num[:-1] + str(num)
+        else:
+            display_num = display_num + str(num)
+    else:
+        display_num = display_num + str(num)
     display.delete("1.0", "end")
     display.insert("1.0", display_num)
 
@@ -13,12 +20,31 @@ def num_press(num):
 def equals_to():
     global display_num
     try:
-        result = str(eval(display_num))
+        while True:
+            if not display_num[-1].isdigit():
+                display_num = display_num[:-1]
+            else:
+                break
+        result = eval(display_num)
+        if int(result) == float(result):
+            result = str(int(result))
+        else:
+            result = str(float(result))
     except ZeroDivisionError:
         result = "0"
     display_num = result
     display.delete("1.0", "end")
     display.insert("1.0", result)
+
+
+def del_num():
+    global display_num
+    if len(display_num) > 0:
+        display_num = display_num[:-1]
+    else:
+        display_num = ""
+    display.delete("1.0", "end")
+    display.insert("1.0", display_num)
 
 
 def num_clear_all():
@@ -31,7 +57,7 @@ def num_clear_entry():
     global display_num
     display_num2 = ""
     for num in display_num[::-1]:
-        if num.isnumeric():
+        if num.isdigit():
             display_num2 = display_num[:display_num.index(num)]
         else:
             break
@@ -72,6 +98,8 @@ def memory_plus():
 def memory_minus():
     global memory
     global display_num
+    if display_num == "":
+        display_num = "0"
     memory = int(memory) - int(display_num)
     display_num = ""
 
@@ -80,7 +108,7 @@ def memory_recall():
     global memory
     global display_num
     if display_num != "":
-        if display_num[-1].isnumeric():
+        if display_num[-1].isdigit():
             display_num = memory
         else:
             display_num = str(display_num) + str(memory)
@@ -102,6 +130,26 @@ def memory_switch():
         num_m_recall["state"] = NORMAL
 
 
+def mem_clear_click():
+    memory_clear()
+    memory_switch()
+
+
+def mem_plus_click():
+    memory_plus()
+    memory_switch()
+
+
+def mem_minus_click():
+    memory_minus()
+    memory_switch()
+
+
+def mem_recall_click():
+    memory_recall()
+    memory_switch()
+
+
 def change_sign():
     global display_num
     if display_num[0] == "-":
@@ -117,10 +165,13 @@ def factorial():
     if display_num == "" or eval(display_num) == 0:
         display_num = "0"
     else:
-        prod = 1
-        for i in range(1, eval(display_num)+1):
-            prod = prod * i
-        display_num = str(prod)
+        try:
+            prod = 1
+            for i in range(1, eval(display_num)+1):
+                prod = prod * i
+            display_num = str(prod)
+        except TypeError:
+            pass
     display.delete("1.0", "end")
     display.insert("1.0", display_num)
 
@@ -142,28 +193,31 @@ expression = ""
 memory = ""
 
 # Display row
-display = Text(main_window, height=2, width=27, relief=RAISED, bg=FONT, fg=BACKGROUND, padx=3, pady=1)
-display.grid(columnspan=4, pady=3, padx=1)
-num_equal = Button(main_window, text="=", height=1, width=5, padx=5, pady=5, relief=RAISED, command=lambda: equals_to(),
+display = Text(main_window, height=2, width=22, relief=RAISED, bg=FONT, fg=BACKGROUND, padx=3, pady=1)
+display.grid(columnspan=3, pady=3, padx=1)
+num_del = Button(main_window, text="<-", height=1, width=5, padx=5, pady=5, relief=RAISED, command=del_num,
+                 bg=FONT, fg=BACKGROUND)
+num_del.grid(column=3, row=0, padx=5, pady=5)
+num_equal = Button(main_window, text="=", height=1, width=5, padx=5, pady=5, relief=RAISED, command=equals_to,
                    bg=FONT, fg=BACKGROUND)
 num_equal.grid(column=4, row=0, padx=5, pady=5)
 
 # Calculator layout
 # Row 0
 num_mc = Button(main_window, text="MC", height=1, width=5, padx=3, pady=1, relief=RAISED, state=DISABLED,
-                command=lambda: [memory_clear(), memory_switch()], bg=BUTTONS, fg=FONT)
+                command=mem_clear_click, bg=BUTTONS, fg=FONT)
 num_mc.grid(column=0, row=2, padx=5, pady=5)
 num_m_plus = Button(main_window, text="M+", height=1, width=5, padx=3, pady=1, relief=RAISED, state=NORMAL,
-                    command=lambda: [memory_plus(), memory_switch()], bg=BUTTONS, fg=FONT)
+                    command=mem_plus_click, bg=BUTTONS, fg=FONT)
 num_m_plus.grid(column=1, row=2, padx=5, pady=5)
 num_m_minus = Button(main_window, text="M-", height=1, width=5, padx=3, pady=1, relief=RAISED, state=DISABLED,
-                     command=lambda: [memory_minus()], bg=BUTTONS, fg=FONT)
+                     command=mem_minus_click, bg=BUTTONS, fg=FONT)
 num_m_minus.grid(column=2, row=2, padx=5, pady=5)
 num_m_recall = Button(main_window, text="MR", height=1, width=5, padx=3, pady=1, relief=RAISED, state=DISABLED,
-                      command=lambda: [memory_recall(), memory_switch()], bg=BUTTONS, fg=FONT)
+                      command=mem_recall_click, bg=BUTTONS, fg=FONT)
 num_m_recall.grid(column=3, row=2, padx=5, pady=5)
 num_fact = Button(main_window, text="x!", height=1, width=5, padx=3, pady=1, relief=RAISED,
-                  command=lambda: factorial(), bg=BUTTONS, fg=FONT)
+                  command=factorial, bg=BUTTONS, fg=FONT)
 num_fact.grid(column=4, row=2, padx=5, pady=5)
 
 
@@ -177,11 +231,11 @@ num_8.grid(column=1, row=3, padx=5, pady=5)
 num_9 = Button(main_window, text="9", height=1, width=5, padx=3, pady=1, relief=RAISED, command=lambda: num_press("9"),
                bg=BUTTONS, fg=FONT)
 num_9.grid(column=2, row=3, padx=5, pady=5)
-num_c = Button(main_window, text="C", height=1, width=5, padx=3, pady=1, relief=RAISED, command=lambda: num_clear_all(),
+num_c = Button(main_window, text="C", height=1, width=5, padx=3, pady=1, relief=RAISED, command=num_clear_all,
                bg=BUTTONS, fg=FONT)
 num_c.grid(column=3, row=3, padx=5, pady=5)
 num_ce = Button(main_window, text="CE", height=1, width=5, padx=3, pady=1, relief=RAISED,
-                command=lambda: num_clear_entry(), bg=BUTTONS, fg=FONT)
+                command=num_clear_entry, bg=BUTTONS, fg=FONT)
 num_ce.grid(column=4, row=3, padx=5, pady=5)
 
 # Row 2
@@ -226,7 +280,7 @@ num_dot = Button(main_window, text=".", height=1, width=5, padx=3, pady=1, relie
                  command=lambda: num_press("."), bg=BUTTONS, fg=FONT)
 num_dot.grid(column=1, row=6, padx=5, pady=5)
 num_change_sign = Button(main_window, text="+/-", height=1, width=5, padx=3, pady=1, relief=RAISED,
-                         command=lambda: change_sign(), bg=BUTTONS, fg=FONT)
+                         command=change_sign, bg=BUTTONS, fg=FONT)
 num_change_sign.grid(column=2, row=6, padx=5, pady=5)
 num_div = Button(main_window, text="/", height=1, width=5, padx=3, pady=1, relief=RAISED,
                  command=lambda: num_press("/"), bg=BUTTONS, fg=FONT)
@@ -234,4 +288,5 @@ num_div.grid(column=3, row=6, padx=5, pady=5)
 num_mult = Button(main_window, text="x", height=1, width=5, padx=3, pady=1, relief=RAISED,
                   command=lambda: num_press("*"), bg=BUTTONS, fg=FONT)
 num_mult.grid(column=4, row=6, padx=5, pady=5)
+
 main_window.mainloop()
