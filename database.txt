@@ -1,0 +1,68 @@
+{
+    "Movies": [
+        {
+            "title": "Terminator",
+            "genre": "Action",
+            "release_year": 1989,
+            "length": 125
+        },
+        {
+            "title": "Terminator 2",
+            "genre": "Action",
+            "release_year": 1989,
+            "length": 125
+        },
+        {
+            "title": "Avatar",
+            "genre": "Science Fiction",
+            "release_year": "2010",
+            "length": "180"
+        }
+    ],
+    "Games": [
+        {
+            "title": "God of War",
+            "publisher": "Santa Monica Studios",
+            "platform": "PS4",
+            "genre": "Action",
+            "release_year": "2018"
+        },
+        {
+            "title": "Ghost of Tsushima",
+            "publisher": "Suckerpunch Games",
+            "platform": "PS4",
+            "genre": "RPG",
+            "release_year": "2020"
+        },
+        {
+            "title": "Ratchet & Clank",
+            "publisher": "Naughty Dog",
+            "platform": "PS4",
+            "genre": "Action",
+            "release_year": "2016"
+        }
+    ],
+    "Books": [
+        {
+            "title": "Going Postal",
+            "author": "Terry Pratchet",
+            "publisher": "Korgy Books",
+            "isbn": "9780552149433",
+            "release_year": "2005"
+        },
+        {
+            "title": "Peter Pan",
+            "author": "J. M. Barrie",
+            "publisher": "Harper Collins",
+            "isbn": "9780007558179",
+            "release_year": "2005"
+        },
+        {
+            "title": "1Q84",
+            "author": "Haruki Murakami",
+            "publisher": "Vintage",
+            "isbn": "97800099578079",
+            "release_year": "2012"
+        }
+    ]
+}
