@@ -2,6 +2,7 @@ from tkinter import ttk
 from tkinter import *
 from arakelian_krikor_L13_T1_Model import *
 
+
 # Populate functions
 def populate_listbox_movies():
     try:
