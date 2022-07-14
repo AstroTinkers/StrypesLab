@@ -33,6 +33,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load("./ASSETS/player.png")
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(center=(480, 540))
         self.last_shot = pygame.time.get_ticks()
 
@@ -72,6 +73,7 @@ class Projectiles(pygame.sprite.Sprite):
         else:
             self.image = pygame.image.load("./ASSETS/torpedo.png")
             self.rect = self.image.get_rect(center=(x + 25, y))
+        self.mask = pygame.mask.from_surface(self.image)
 
     def update(self):
         self.rect.y -= 10
@@ -93,12 +95,15 @@ class Game:
         self.font = pygame.font.Font("./ASSETS/crystal.ttf", 32)
         self.text = self.font.render(str(self.torpedoes), True, "green", None)
 
+    def shoot(self):
+        # add sound
+        pygame.sprite.spritecollide(Projectiles, self.enemies_group, True)
+
     def run(self):
-        run = True
-        while run:
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    run = False
+                    pygame.quit()
 
                 if event.type == pygame.KEYDOWN:  # Firing projectiles
                     current_time = pygame.time.get_ticks()
