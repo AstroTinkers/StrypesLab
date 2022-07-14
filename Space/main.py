@@ -1,4 +1,5 @@
 import pygame
+from sys import exit
 
 
 class MovingBackground:
@@ -95,15 +96,16 @@ class Game:
         self.font = pygame.font.Font("./ASSETS/crystal.ttf", 32)
         self.text = self.font.render(str(self.torpedoes), True, "green", None)
 
-    def shoot(self):
+    def shoot(self, projectile_group):
         # add sound
-        pygame.sprite.spritecollide(Projectiles, self.enemies_group, True)
+        pygame.sprite.spritecollide([projectile for projectile in projectile_group], self.enemies_group, True)  # FIX THIS
 
     def run(self):
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    exit()
 
                 if event.type == pygame.KEYDOWN:  # Firing projectiles
                     current_time = pygame.time.get_ticks()
@@ -129,23 +131,23 @@ class Game:
             pygame.display.update()
             FramesPerSec.tick(FPS)
 
-        pygame.quit()
-
 
 # Initializing
 pygame.init()
 
 # Game global parameters
-FPS = 120
-FramesPerSec = pygame.time.Clock()
 WIDTH, HEIGHT = 960, 540
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 WINDOW_LIMIT = WINDOW.get_rect()
 BACKGROUND = pygame.image.load("./ASSETS/background.png")
+
 TORPEDO_ICON = pygame.image.load("./ASSETS/torpedo_icon.png")
 TORPEDO_COUNT = 3
+
 pygame.display.set_caption("Space game!")
 pygame.mouse.set_visible(False)
+FPS = 60
+FramesPerSec = pygame.time.Clock()
 
 game = Game()
 
