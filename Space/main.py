@@ -1,133 +1,49 @@
-import pygame
-import random
-from screeninfo import get_monitors
 from sys import exit
+
+from screeninfo import get_monitors
+
+from player import *
+from enemies import *
 
 
 class MovingBackground:
     """Create the moving stars in the background, simulating movement"""
     def __init__(self):
-        self.bg_small_stars = pygame.image.load("./ASSETS/stars.png").convert_alpha()
-        self.rect_BG_img_small_stars = self.bg_small_stars.get_rect()
+        self.bg_stars = STARS
+        self.rect_BG_img_stars = self.bg_stars.get_rect()
         self.bgY1s = 0
         self.bgX1s = 0
-        self.bgY2s = self.rect_BG_img_small_stars.height
+        self.bgY2s = self.rect_BG_img_stars.height
         self.bgX2s = 0
-        self.movingUpSpeed_small_stars = 10 * DeltaTime
+        self.movingUpSpeed_stars = 10 * DeltaTime
 
-        self.bg_big_stars = pygame.image.load("./ASSETS/asteroids.png").convert_alpha()
-        self.rect_BG_img_big_stars = self.bg_big_stars.get_rect()
-        self.bgY1b = 0
-        self.bgX1b = 0
-        self.bgY2b = self.rect_BG_img_big_stars.height
-        self.bgX2b = 0
-        self.movingUpSpeed_big_stars = 160 * DeltaTime
+        self.bg_asteroids = ASTEROIDS
+        self.rect_BG_img_asteroids = self.bg_asteroids.get_rect()
+        self.bgY1a = 0
+        self.bgX1a = 0
+        self.bgY2a = self.rect_BG_img_asteroids.height
+        self.bgX2a = 0
+        self.movingUpSpeed_asteroids = 160 * DeltaTime
 
     def update(self):
-        self.bgY1s += self.movingUpSpeed_small_stars
-        self.bgY2s += self.movingUpSpeed_small_stars
-        self.bgY1b += self.movingUpSpeed_big_stars
-        self.bgY2b += self.movingUpSpeed_big_stars
-        if self.bgY1s >= self.rect_BG_img_small_stars.height:
-            self.bgY1s = -self.rect_BG_img_small_stars.height
-        if self.bgY2s >= self.rect_BG_img_small_stars.height:
-            self.bgY2s = -self.rect_BG_img_small_stars.height
-        if self.bgY1b >= self.rect_BG_img_big_stars.height:
-            self.bgY1b = -self.rect_BG_img_big_stars.height
-        if self.bgY2b >= self.rect_BG_img_big_stars.height:
-            self.bgY2b = -self.rect_BG_img_big_stars.height
+        self.bgY1s += self.movingUpSpeed_stars
+        self.bgY2s += self.movingUpSpeed_stars
+        self.bgY1a += self.movingUpSpeed_asteroids
+        self.bgY2a += self.movingUpSpeed_asteroids
+        if self.bgY1s >= self.rect_BG_img_stars.height:
+            self.bgY1s = -self.rect_BG_img_stars.height
+        if self.bgY2s >= self.rect_BG_img_stars.height:
+            self.bgY2s = -self.rect_BG_img_stars.height
+        if self.bgY1a >= self.rect_BG_img_asteroids.height:
+            self.bgY1a = -self.rect_BG_img_asteroids.height
+        if self.bgY2a >= self.rect_BG_img_asteroids.height:
+            self.bgY2a = -self.rect_BG_img_asteroids.height
 
     def render(self):
-        WINDOW.blit(self.bg_small_stars, (self.bgX1s, self.bgY1s))
-        WINDOW.blit(self.bg_small_stars, (self.bgX2s, self.bgY2s))
-        WINDOW.blit(self.bg_big_stars, (self.bgX1b, self.bgY1b))
-        WINDOW.blit(self.bg_big_stars, (self.bgX2b, self.bgY2b))
-
-
-class PlayerShip(pygame.sprite.Sprite):
-    """Main player class, responsible for the player's ship, movement and firing controls"""
-    def __init__(self, width, height):
-        super().__init__()
-        self.image = pygame.image.load("./ASSETS/player.png").convert_alpha()
-        self.mask = pygame.mask.from_surface(self.image)
-        self.rect = self.image.get_rect(center=(width/2, height - 50))
-        self.player_lives = 3
-        self.last_shot = pygame.time.get_ticks()
-        self.speed = 500
-
-    def move(self, datetime):
-        pressed_key = pygame.key.get_pressed()
-        if pressed_key[pygame.K_w]:
-            self.rect.y += -self.speed * datetime
-        if pressed_key[pygame.K_s]:
-            self.rect.y += self.speed * datetime
-        if pressed_key[pygame.K_a]:
-            self.rect.x += -self.speed * datetime
-        if pressed_key[pygame.K_d]:
-            self.rect.x += self.speed * datetime
-        self.rect.clamp_ip(WINDOW_LIMIT)
-
-    def create_projectile(self, w_type):
-        self.last_shot = pygame.time.get_ticks()
-        return PlayerProjectile(self.rect[0], self.rect[1], w_type)
-
-
-class EnemyShip(pygame.sprite.Sprite):  # FIX THIS
-    """Enemy class, responsible for creating the enemies the player has to fight"""
-    def __init__(self, width, height):
-        super().__init__()
-        self.image = pygame.image.load("./ASSETS/enemy_1.png").convert_alpha()
-        self.mask = pygame.mask.from_surface(self.image)
-        self.rect = self.image.get_rect(center=(random.randint(0, width), random.randint(0, height)))
-        self.last_shot = pygame.time.get_ticks()
-
-    def create_projectile(self):
-        self.last_shot = pygame.time.get_ticks()
-        return EnemyProjectile(self.rect[0], self.rect[1])
-
-
-class EnemyProjectile(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        super().__init__()
-        self.image = pygame.image.load("./ASSETS/laser_enemy.png").convert_alpha()
-        self.rect = self.image.get_rect(center=(x + 59, y + 160))
-        self.mask = pygame.mask.from_surface(self.image)
-        self.speed = 1000
-
-    def update(self):
-        self.rect.y += self.speed * DeltaTime
-
-        if self.rect.y > HEIGHT:
-            self.kill()
-
-
-class PlayerProjectile(pygame.sprite.Sprite):
-    """A class to handle lasers and torpedoes"""
-
-    fire_left = True
-
-    def __init__(self, x, y, w_type):
-        super().__init__()
-        self.type = w_type
-        if self.type == "laser":
-            self.image = pygame.image.load("./ASSETS/laser.png").convert_alpha()
-            if PlayerProjectile.fire_left:  # Alternate fire between left and right laser on the ship
-                self.rect = self.image.get_rect(center=(x + 9, y))
-                PlayerProjectile.fire_left = False
-            else:
-                self.rect = self.image.get_rect(center=(x + 129, y))
-                PlayerProjectile.fire_left = True
-        else:
-            self.image = pygame.image.load("./ASSETS/torpedo.png").convert_alpha()
-            self.rect = self.image.get_rect(center=(x + 70, y))
-        self.mask = pygame.mask.from_surface(self.image)
-        self.speed = 1500
-
-    def update(self):
-        self.rect.y -= self.speed * DeltaTime
-
-        if self.rect.y < 0:
-            self.kill()
+        WINDOW.blit(self.bg_stars, (self.bgX1s, self.bgY1s))
+        WINDOW.blit(self.bg_stars, (self.bgX2s, self.bgY2s))
+        WINDOW.blit(self.bg_asteroids, (self.bgX1a, self.bgY1a))
+        WINDOW.blit(self.bg_asteroids, (self.bgX2a, self.bgY2a))
 
 
 class Game:
@@ -137,7 +53,7 @@ class Game:
         self.font = pygame.font.Font("./ASSETS/crystal.ttf", 32)
 
         # Player ship
-        self.player_ship = PlayerShip(WIDTH, HEIGHT)
+        self.player_ship = PlayerShip(WIDTH, HEIGHT, PLAYER_SHIP)
         self.player_group = pygame.sprite.Group()
         self.player_group.add(self.player_ship)
         self.text_player_lives = self.font.render(str(self.player_ship.player_lives), True, "green", None)
@@ -174,9 +90,11 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     if self.player_group:
                         if event.key == pygame.K_SPACE and current_time - self.player_ship.last_shot > 150:
-                            self.lasers_group.add(self.player_ship.create_projectile("laser"))
+                            self.lasers_group.add(self.player_ship.create_projectile("laser", PLAYER_LASER,
+                                                                                     PLAYER_TORPEDO, DeltaTime))
                         if event.key == pygame.K_RCTRL and self.torpedoes > 0:
-                            self.torpedoes_group.add(self.player_ship.create_projectile("torpedo"))
+                            self.torpedoes_group.add(self.player_ship.create_projectile("torpedo", PLAYER_LASER,
+                                                                                        PLAYER_TORPEDO, DeltaTime))
                             self.torpedoes -= 1
                             self.text_torpedoes = self.font.render(str(self.torpedoes), True, "green", None)
 
@@ -196,12 +114,12 @@ class Game:
 
             # Draw player ship
             self.player_group.draw(WINDOW)
-            self.player_ship.move(DeltaTime)
+            self.player_ship.move(DeltaTime, WINDOW_LIMIT)
 
             # Draw enemy ships and projectiles
             for enemy in self.enemy_ships_group:
                 if current_time - enemy.last_shot > random.randint(1000, 3500):
-                    self.enemy_lasers_group.add(enemy.create_projectile())
+                    self.enemy_lasers_group.add(enemy.create_projectile(ENEMY_PROJECTILE, DeltaTime, HEIGHT))
             self.enemy_ships_group.draw(WINDOW)  # Draw enemies
             self.enemy_lasers_group.draw(WINDOW)
             self.enemy_lasers_group.update()
@@ -237,7 +155,7 @@ class Game:
 
             # Check if enemies are less than 10 and add more
             if 10 > len(self.enemy_ships_group) >= 0 and current_time - self.enemy_spawn_time > 1000:
-                self.enemy_ships_group.add(EnemyShip(WIDTH, HEIGHT/2))
+                self.enemy_ships_group.add(EnemyShip(WIDTH, HEIGHT / 2, ENEMY_SHIP))
                 self.enemy_spawn_time = pygame.time.get_ticks()
 
             pygame.display.update()
@@ -251,9 +169,16 @@ pygame.init()
 WIDTH, HEIGHT = get_monitors()[0].width, get_monitors()[0].height
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
 WINDOW_LIMIT = WINDOW.get_rect()
-BACKGROUND = pygame.image.load("./ASSETS/background.png").convert()
-EXPLOSION = pygame.image.load("./ASSETS/torpedo.png")
-TORPEDO_ICON = pygame.image.load("./ASSETS/torpedo_icon.png")
+BACKGROUND = pygame.transform.scale(pygame.image.load("./ASSETS/background.png"), (WIDTH, HEIGHT)).convert()
+STARS = pygame.transform.scale(pygame.image.load("./ASSETS/stars.png"), (WIDTH, HEIGHT)).convert_alpha()
+ASTEROIDS = pygame.transform.scale(pygame.image.load("./ASSETS/asteroids.png"), (WIDTH, HEIGHT)).convert_alpha()
+EXPLOSION = pygame.image.load("./ASSETS/torpedo.png")  # FIX THIS
+PLAYER_SHIP = pygame.image.load("./ASSETS/player.png").convert_alpha()
+PLAYER_LASER = pygame.image.load("./ASSETS/laser.png").convert_alpha()
+PLAYER_TORPEDO = pygame.image.load("./ASSETS/torpedo.png").convert_alpha()
+ENEMY_SHIP = pygame.image.load("./ASSETS/enemy_1.png").convert_alpha()
+ENEMY_PROJECTILE = pygame.image.load("./ASSETS/laser_enemy.png").convert_alpha()
+TORPEDO_ICON = pygame.image.load("./ASSETS/torpedo_icon.png").convert_alpha()
 TORPEDO_COUNT = 3
 
 pygame.display.set_caption("Space game!")
