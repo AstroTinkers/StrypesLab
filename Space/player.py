@@ -16,13 +16,13 @@ class PlayerShip(pygame.sprite.Sprite):
 
     def move(self, delta_time, window_limit):
         pressed_key = pygame.key.get_pressed()
-        if pressed_key[pygame.K_w]:
+        if pressed_key[pygame.K_w] or pressed_key[pygame.K_UP]:
             self.rect.y += -self.speed * delta_time
-        if pressed_key[pygame.K_s]:
+        if pressed_key[pygame.K_s] or pressed_key[pygame.K_DOWN]:
             self.rect.y += self.speed * delta_time
-        if pressed_key[pygame.K_a]:
+        if pressed_key[pygame.K_a] or pressed_key[pygame.K_LEFT]:
             self.rect.x += -self.speed * delta_time
-        if pressed_key[pygame.K_d]:
+        if pressed_key[pygame.K_d] or pressed_key[pygame.K_RIGHT]:
             self.rect.x += self.speed * delta_time
         self.rect.clamp_ip(window_limit)
 
