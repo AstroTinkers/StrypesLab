@@ -1,7 +1,6 @@
-from sys import exit
-
-import pygame.transform
 from screeninfo import get_monitors
+from sys import exit
+import pygame.transform
 
 from player import *
 from enemies import *
@@ -128,13 +127,18 @@ class Game:
             # Check if enemy is hit by laser
             self.enemy_kill = pygame.sprite.groupcollide(self.lasers_group, self.enemy_ships_group, True, True,
                                                          collided=pygame.sprite.collide_mask)
-            for enemy in self.enemy_kill:
-                EXPLOSION.explosion_occurs_at(enemy.rect[0], enemy.rect[1])
+            if self.enemy_kill:
+                for enemy in self.enemy_kill:
+                    enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_CRASH)
+                    self.explosion_group.add(enemy_explosion)
 
             # Check if enemy is hit by torpedo
             self.torpedo_hit = pygame.sprite.groupcollide(self.torpedoes_group, self.enemy_ships_group, True, True,
                                                           collided=pygame.sprite.collide_mask)
             if self.torpedo_hit:
+                for enemy in self.enemy_ships_group:
+                    enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_CRASH)
+                    self.explosion_group.add(enemy_explosion)
                 self.enemy_ships_group.empty()
 
             # Check if enemy collided with player ship or if enemy killed player
@@ -142,7 +146,15 @@ class Game:
                                                     collided=pygame.sprite.collide_mask)
             self.player_kill = pygame.sprite.groupcollide(self.enemy_lasers_group, self.player_group, True, True,
                                                           collided=pygame.sprite.collide_mask)
+
             if self.crash or self.player_kill:
+                if self.crash:
+                    explosion_player = Explosion(self.player_ship.rect[0], self.player_ship.rect[1],
+                                                 EXPLOSION_CRASH)
+                if self.player_kill:
+                    explosion_player = Explosion(self.player_ship.rect[0], self.player_ship.rect[1],
+                                                 EXPLOSION_CRASH)
+                self.explosion_group.add(explosion_player)
                 self.player_ship.player_lives -= 1
                 self.text_player_lives = self.font.render(str(self.player_ship.player_lives), True, "green", None)
                 self.player_ship.kill()
@@ -161,6 +173,9 @@ class Game:
                 self.enemy_ships_group.add(EnemyShip(1920, 640, ENEMY_SHIP))
                 self.enemy_spawn_time = pygame.time.get_ticks()
 
+            self.explosion_group.draw(WINDOW)
+            self.explosion_group.update()
+
             pygame.transform.scale(WINDOW, (WIDTH, HEIGHT), RESOLUTION)
             pygame.display.update()
             FramesPerSec.tick(FPS)
@@ -178,7 +193,7 @@ BACKGROUND = pygame.image.load("./ASSETS/background.png").convert()
 STARS = pygame.image.load("./ASSETS/stars.png").convert_alpha()
 ASTEROIDS = pygame.image.load("./ASSETS/asteroids.png").convert_alpha()
 
-EXPLOSION = Explosion("./ASSETS/explosion", 24, 120, 120)
+EXPLOSION_CRASH = ExplosionList("./ASSETS/EXPLOSION_PLAYER_CRASH/player_explosion*.png").image_list()
 
 PLAYER_SHIP = pygame.image.load("./ASSETS/player.png").convert_alpha()
 PLAYER_LASER = pygame.image.load("./ASSETS/laser.png").convert_alpha()

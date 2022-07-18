@@ -1,27 +1,31 @@
+import glob
+
 import pygame
 
 
-class Explosion(pygame.sprite.Sprite):
-    def __init__(self, filepath, frames, width, height):
+class ExplosionList:
+    def __init__(self, file_path):
         super().__init__()
+        self.image_glob = glob.glob(file_path)
         self.images = []
-        for num in range(1, frames):
-            try:
-                img = pygame.image.load(f"{filepath}{num}.png").convert_alpha()
-                img = pygame.transform.scale(img, (width, height))
-                self.images.append(img)
-            except:
-                break
+
+    def image_list(self):
+        for img in self.image_glob:
+            self.images.append(pygame.image.load(img).convert_alpha())
+        return self.images
+
+
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, x, y, image_list):
+        super().__init__()
+        self.images = image_list
         self.index = 0
         self.image = self.images[self.index]
-        self.rect = self.image.get_rect()
+        self.rect = self.image.get_rect(center=(x, y))
         self.counter = 0
 
-    def explosion_occurs_at(self, x, y):
-        self.rect.center = [x, y]
-
     def update(self):
-        explosion_speed = 20
+        explosion_speed = 4
         self.counter += 1
 
         if self.counter >= explosion_speed and self.index < len(self.images) - 1:
@@ -30,6 +34,5 @@ class Explosion(pygame.sprite.Sprite):
             self.image = self.images[self.index]
 
         # reset animation index
-
         if self.index >= len(self.images) - 1 and self.counter >= explosion_speed:
             self.kill()
