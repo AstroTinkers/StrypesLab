@@ -24,7 +24,7 @@ class MovingBackground:
         self.bgX1a = 0
         self.bgY2a = self.rect_BG_img_asteroids.height
         self.bgX2a = 0
-        self.movingUpSpeed_asteroids = 160 * DeltaTime
+        self.movingUpSpeed_asteroids = 30 * DeltaTime
 
     def update(self):
         self.bgY1s += self.movingUpSpeed_stars
@@ -51,7 +51,9 @@ class Game:
     """Main game class - everything runs from here"""
     def __init__(self):
         self.bg_animated = MovingBackground()
-        self.font = pygame.font.Font("./ASSETS/crystal.ttf", 32)
+        self.font = pygame.font.Font("./ASSETS/crystal.ttf", 42)
+        self.points = 0
+        self.points_text = self.font.render(f"POINTS: {str(self.points)}", True, "green", None)
 
         # Player ship
         self.player_ship = PlayerShip(1920, 1280, PLAYER_SHIP)
@@ -97,14 +99,20 @@ class Game:
                                                                                         PLAYER_TORPEDO, DeltaTime))
                             self.torpedoes -= 1
                             self.text_torpedoes = self.font.render(str(self.torpedoes), True, "green", None)
+                    if event.key == pygame.K_BACKSPACE:
+                        self.player_ship.player_lives = 3
+                        self.text_player_lives = self.font.render(str(self.player_ship.player_lives), True, "green",
+                                                                  None)
 
             # Draw and animate the background
             WINDOW.blit(BACKGROUND, (0, 0))
             self.bg_animated.update()
             self.bg_animated.render()
-            WINDOW.blit(TORPEDO_ICON, (40, 1240))
-            WINDOW.blit(self.text_torpedoes, (10, 1240))
-            WINDOW.blit(self.text_player_lives, (1880, 1240))
+            WINDOW.blit(TORPEDO_ICON, (50, 1220))
+            WINDOW.blit(self.text_torpedoes, (10, 1225))
+            WINDOW.blit(PLAYER_ICON, (1820, 1210))
+            WINDOW.blit(self.text_player_lives, (1880, 1215))
+            WINDOW.blit(self.points_text, (900, 20))
 
             # Draw player projectiles
             self.lasers_group.draw(WINDOW)
@@ -129,16 +137,18 @@ class Game:
                                                          collided=pygame.sprite.collide_mask)
             if self.enemy_kill:
                 for enemy in self.enemy_kill:
-                    enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_CRASH)
+                    enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY)
                     self.explosion_group.add(enemy_explosion)
+                    self.points += 10
 
             # Check if enemy is hit by torpedo
             self.torpedo_hit = pygame.sprite.groupcollide(self.torpedoes_group, self.enemy_ships_group, True, True,
                                                           collided=pygame.sprite.collide_mask)
             if self.torpedo_hit:
                 for enemy in self.enemy_ships_group:
-                    enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_CRASH)
+                    enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY)
                     self.explosion_group.add(enemy_explosion)
+                    self.points += 10
                 self.enemy_ships_group.empty()
 
             # Check if enemy collided with player ship or if enemy killed player
@@ -150,10 +160,11 @@ class Game:
             if self.crash or self.player_kill:
                 if self.crash:
                     explosion_player = Explosion(self.player_ship.rect[0], self.player_ship.rect[1],
-                                                 EXPLOSION_CRASH)
+                                                 EXPLOSION_PLAYER_CRASH)
+                    self.points += 10
                 if self.player_kill:
                     explosion_player = Explosion(self.player_ship.rect[0], self.player_ship.rect[1],
-                                                 EXPLOSION_CRASH)
+                                                 EXPLOSION_PLAYER)
                 self.explosion_group.add(explosion_player)
                 self.player_ship.player_lives -= 1
                 self.text_player_lives = self.font.render(str(self.player_ship.player_lives), True, "green", None)
@@ -176,6 +187,8 @@ class Game:
             self.explosion_group.draw(WINDOW)
             self.explosion_group.update()
 
+            self.points_text = self.font.render(f"POINTS: {str(self.points)}", True, "green", None)
+
             pygame.transform.scale(WINDOW, (WIDTH, HEIGHT), RESOLUTION)
             pygame.display.update()
             FramesPerSec.tick(FPS)
@@ -193,9 +206,12 @@ BACKGROUND = pygame.image.load("./ASSETS/background.png").convert()
 STARS = pygame.image.load("./ASSETS/stars.png").convert_alpha()
 ASTEROIDS = pygame.image.load("./ASSETS/asteroids.png").convert_alpha()
 
-EXPLOSION_CRASH = ExplosionList("./ASSETS/EXPLOSION_PLAYER_CRASH/player_explosion*.png").image_list()
+EXPLOSION_ENEMY = ExplosionList("./ASSETS/EXPLOSION_ENEMY/explosion_enemy*.png").image_list()
+EXPLOSION_PLAYER_CRASH = ExplosionList("./ASSETS/EXPLOSION_PLAYER_CRASH/explosion_player_crash*.png").image_list()
+EXPLOSION_PLAYER = ExplosionList("./ASSETS/EXPLOSION_PLAYER/explosion_player*.png").image_list()
 
 PLAYER_SHIP = pygame.image.load("./ASSETS/player.png").convert_alpha()
+PLAYER_ICON = pygame.image.load("./ASSETS/player_icon.png").convert_alpha()
 PLAYER_LASER = pygame.image.load("./ASSETS/laser.png").convert_alpha()
 PLAYER_TORPEDO = pygame.image.load("./ASSETS/torpedo.png").convert_alpha()
 ENEMY_SHIP = pygame.image.load("./ASSETS/enemy_1.png").convert_alpha()
