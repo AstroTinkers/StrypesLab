@@ -10,7 +10,7 @@ from explosions import *
 class MovingBackground:
     """Create the moving stars in the background, simulating movement"""
     def __init__(self):
-        self.bg_stars = STARS
+        self.bg_stars = SMALL_STARS
         self.rect_BG_img_stars = self.bg_stars.get_rect()
         self.bgY1s = 0
         self.bgX1s = 0
@@ -18,7 +18,7 @@ class MovingBackground:
         self.bgX2s = 0
         self.movingUpSpeed_stars = 10 * DeltaTime
 
-        self.bg_asteroids = ASTEROIDS
+        self.bg_asteroids = BIG_STARS
         self.rect_BG_img_asteroids = self.bg_asteroids.get_rect()
         self.bgY1a = 0
         self.bgX1a = 0
@@ -203,8 +203,8 @@ RESOLUTION = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
 WINDOW = pygame.Surface((1920, 1280))
 WINDOW_LIMIT = WINDOW.get_rect()
 BACKGROUND = pygame.image.load("./ASSETS/background.png").convert()
-STARS = pygame.image.load("./ASSETS/stars.png").convert_alpha()
-ASTEROIDS = pygame.image.load("./ASSETS/asteroids.png").convert_alpha()
+SMALL_STARS = pygame.image.load("./ASSETS/stars_small.png").convert_alpha()
+BIG_STARS = pygame.image.load("./ASSETS/stars_big.png").convert_alpha()
 
 EXPLOSION_ENEMY = ExplosionList("./ASSETS/EXPLOSION_ENEMY/explosion_enemy*.png").image_list()
 EXPLOSION_PLAYER_CRASH = ExplosionList("./ASSETS/EXPLOSION_PLAYER_CRASH/explosion_player_crash*.png").image_list()
