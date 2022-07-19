@@ -168,17 +168,16 @@ class Game:
                 WINDOW.blit(self.points_text, (782, 20))
 
                 # Check if enemy is hit by laser
-                self.enemy_kill = pygame.sprite.groupcollide(self.lasers_group, self.enemy_ships_group, True, True,
-                                                             collided=pygame.sprite.collide_mask)
+                self.enemy_kill = pygame.sprite.groupcollide(self.lasers_group, self.enemy_ships_group, True, True)
                 if self.enemy_kill:
                     for enemy in self.enemy_kill:
                         enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY_SPRITES)
                         self.explosion_group.add(enemy_explosion)
                         self.points += 10
                         self.kill_count += 1
+
                 self.enemy_advanced_kill = pygame.sprite.groupcollide(self.lasers_group,
-                                                                      self.enemy_ships_advanced_group, True, True,
-                                                                      collided=pygame.sprite.collide_mask)
+                                                                      self.enemy_ships_advanced_group, True, True)
                 if self.enemy_advanced_kill:
                     for enemy in self.enemy_advanced_kill:
                         enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY_SPRITES)
@@ -188,17 +187,18 @@ class Game:
 
                 # Check if enemy is hit by torpedo
                 self.torpedo_hit_enemy = pygame.sprite.groupcollide(self.torpedoes_group, self.enemy_ships_group, True,
-                                                                    True, collided=pygame.sprite.collide_mask)
+                                                                    False)
                 self.torpedo_hit_advanced_enemy = pygame.sprite.groupcollide(self.torpedoes_group,
                                                                              self.enemy_ships_advanced_group, True,
-                                                                             True, collided=pygame.sprite.collide_mask)
+                                                                             False)
+
                 if self.torpedo_hit_enemy or self.torpedo_hit_advanced_enemy:
-                    for enemy in self.enemy_ships_group:
+                    for enemy in self.torpedo_hit_enemy:
                         enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY_SPRITES)
                         self.explosion_group.add(enemy_explosion)
                         self.points += 10
                         self.kill_count += 1
-                    for enemy in self.enemy_ships_advanced_group:
+                    for enemy in self.torpedo_hit_advanced_enemy:
                         enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY_SPRITES)
                         self.explosion_group.add(enemy_explosion)
                         self.points += 50
@@ -207,12 +207,10 @@ class Game:
                     self.enemy_ships_advanced_group.empty()
 
                 # Check if enemy collided with player ship or if enemy killed player
-                self.crash = pygame.sprite.groupcollide(self.player_group, self.enemy_ships_group, True, True,
-                                                        collided=pygame.sprite.collide_mask)
+                self.crash = pygame.sprite.groupcollide(self.player_group, self.enemy_ships_group, True, True)
                 self.crash_advanced = pygame.sprite.groupcollide(self.player_group, self.enemy_ships_advanced_group,
-                                                                 True, True, collided=pygame.sprite.collide_mask)
-                self.player_kill = pygame.sprite.groupcollide(self.enemy_lasers_group, self.player_group, True, True,
-                                                              collided=pygame.sprite.collide_mask)
+                                                                 True, True)
+                self.player_kill = pygame.sprite.groupcollide(self.enemy_lasers_group, self.player_group, True, True)
 
                 if self.crash or self.player_kill or self.crash_advanced:
                     if self.crash or self.crash_advanced:
