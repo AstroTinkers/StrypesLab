@@ -5,14 +5,30 @@ pygame.init()
 
 class PlayerShip(pygame.sprite.Sprite):
     """Main player class, responsible for the player's ship, movement and firing controls"""
-    def __init__(self, width, height, image):
+    def __init__(self, width, height, image_list):
         super().__init__()
-        self.image = image
+        self.images = image_list
+        self.index = 0
+        self.image = self.images[self.index]
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(center=(width/2, height - 50))
         self.player_lives = 3
         self.last_shot = pygame.time.get_ticks()
         self.speed = 500
+        self.counter = 0
+
+    def update(self):
+        engine_animation_speed = 4
+        self.counter += 1
+
+        if self.counter >= engine_animation_speed and self.index < len(self.images) - 1:
+            self.counter = 0
+            self.index += 1
+            self.image = self.images[self.index]
+
+        # reset animation index
+        if self.index >= len(self.images) - 1 and self.counter >= engine_animation_speed:
+            self.index = 0
 
     def move(self, delta_time, window_limit):
         pressed_key = pygame.key.get_pressed()
@@ -41,7 +57,9 @@ class PlayerProjectile(pygame.sprite.Sprite):
         self.type = w_type
         if self.type == "laser":
             self.image = image_laser
-            if PlayerProjectile.fire_left:  # Alternate fire between left and right laser on the ship
+
+            # Alternate fire between left and right laser on the ship
+            if PlayerProjectile.fire_left:
                 self.rect = self.image.get_rect(center=(x + 9, y))
                 PlayerProjectile.fire_left = False
             else:

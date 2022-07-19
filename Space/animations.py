@@ -3,7 +3,7 @@ import glob
 import pygame
 
 
-class ExplosionList:
+class SpriteList:
     def __init__(self, file_path):
         super().__init__()
         self.image_glob = glob.glob(file_path)
