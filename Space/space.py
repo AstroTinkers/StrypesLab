@@ -18,33 +18,33 @@ class MovingBackground:
         self.bgX2s = 0
         self.movingUpSpeed_stars = 10 * DeltaTime
 
-        self.bg_asteroids = BIG_STARS
-        self.rect_BG_img_asteroids = self.bg_asteroids.get_rect()
+        self.bg_small_stars = BIG_STARS
+        self.rect_BG_img_small_stars = self.bg_small_stars.get_rect()
         self.bgY1a = 0
         self.bgX1a = 0
-        self.bgY2a = self.rect_BG_img_asteroids.height
+        self.bgY2a = self.rect_BG_img_small_stars.height
         self.bgX2a = 0
-        self.movingUpSpeed_asteroids = 30 * DeltaTime
+        self.movingUpSpeed_small_stars = 30 * DeltaTime
 
     def update(self):
         self.bgY1s += self.movingUpSpeed_stars
         self.bgY2s += self.movingUpSpeed_stars
-        self.bgY1a += self.movingUpSpeed_asteroids
-        self.bgY2a += self.movingUpSpeed_asteroids
+        self.bgY1a += self.movingUpSpeed_small_stars
+        self.bgY2a += self.movingUpSpeed_small_stars
         if self.bgY1s >= self.rect_BG_img_stars.height:
             self.bgY1s = -self.rect_BG_img_stars.height
         if self.bgY2s >= self.rect_BG_img_stars.height:
             self.bgY2s = -self.rect_BG_img_stars.height
-        if self.bgY1a >= self.rect_BG_img_asteroids.height:
-            self.bgY1a = -self.rect_BG_img_asteroids.height
-        if self.bgY2a >= self.rect_BG_img_asteroids.height:
-            self.bgY2a = -self.rect_BG_img_asteroids.height
+        if self.bgY1a >= self.rect_BG_img_small_stars.height:
+            self.bgY1a = -self.rect_BG_img_small_stars.height
+        if self.bgY2a >= self.rect_BG_img_small_stars.height:
+            self.bgY2a = -self.rect_BG_img_small_stars.height
 
     def render(self):
         WINDOW.blit(self.bg_stars, (self.bgX1s, self.bgY1s))
         WINDOW.blit(self.bg_stars, (self.bgX2s, self.bgY2s))
-        WINDOW.blit(self.bg_asteroids, (self.bgX1a, self.bgY1a))
-        WINDOW.blit(self.bg_asteroids, (self.bgX2a, self.bgY2a))
+        WINDOW.blit(self.bg_small_stars, (self.bgX1a, self.bgY1a))
+        WINDOW.blit(self.bg_small_stars, (self.bgX2a, self.bgY2a))
 
 
 def exit_game():
@@ -143,22 +143,25 @@ class Game:
                 self.player_ship.move(DeltaTime, WINDOW_LIMIT)
 
                 # Draw enemy ships and projectiles
-                for enemy in self.enemy_ships_group:
+                for enemy in iter(self.enemy_ships_group):
                     if current_time - enemy.last_shot > random.randint(1000, 3500):
                         self.enemy_lasers_group.add(enemy.create_projectile(ENEMY_PROJECTILE, DeltaTime, 1280))
                 self.enemy_ships_group.draw(WINDOW)
                 self.enemy_ships_group.update()
-                for enemy in self.enemy_ships_group:
+                for enemy in iter(self.enemy_ships_group):
                     enemy.move(DeltaTime, HEIGHT)
-                for enemy in self.enemy_ships_advanced_group:
+                for enemy in iter(self.enemy_ships_advanced_group):
                     if current_time - enemy.last_shot > random.randint(1000, 3500):
                         self.enemy_lasers_group.add(enemy.create_projectile(ENEMY_ADVANCED_PROJECTILE, DeltaTime, 1280))
                 self.enemy_ships_advanced_group.draw(WINDOW)
                 self.enemy_ships_advanced_group.update()
-                for enemy in self.enemy_ships_advanced_group:
+                for enemy in iter(self.enemy_ships_advanced_group):
                     enemy.move(DeltaTime, HEIGHT)
                 self.enemy_lasers_group.draw(WINDOW)
                 self.enemy_lasers_group.update()
+
+                self.explosion_group.draw(WINDOW)
+                self.explosion_group.update()
 
                 # Draw the icons and text
                 WINDOW.blit(TORPEDO_ICON, (50, 1220))
@@ -193,16 +196,28 @@ class Game:
                                                                              False)
 
                 if self.torpedo_hit_enemy or self.torpedo_hit_advanced_enemy:
-                    for enemy in self.torpedo_hit_enemy:
-                        enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY_SPRITES)
-                        self.explosion_group.add(enemy_explosion)
-                        self.points += 10
-                        self.kill_count += 1
-                    for enemy in self.torpedo_hit_advanced_enemy:
-                        enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY_SPRITES)
-                        self.explosion_group.add(enemy_explosion)
-                        self.points += 50
-                        self.kill_count += 1
+                    if self.torpedo_hit_enemy:
+                        for enemy in self.torpedo_hit_enemy:
+                            enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY_SPRITES)
+                            self.explosion_group.add(enemy_explosion)
+                            self.points += 10
+                            self.kill_count += 1
+                        for enemy in self.enemy_ships_advanced_group:
+                            enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY_SPRITES)
+                            self.explosion_group.add(enemy_explosion)
+                            self.points += 50
+                            self.kill_count += 1
+                    if self.torpedo_hit_advanced_enemy:
+                        for enemy in self.enemy_ships_group:
+                            enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY_SPRITES)
+                            self.explosion_group.add(enemy_explosion)
+                            self.points += 10
+                            self.kill_count += 1
+                        for enemy in self.torpedo_hit_advanced_enemy:
+                            enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY_SPRITES)
+                            self.explosion_group.add(enemy_explosion)
+                            self.points += 50
+                            self.kill_count += 1
                     self.enemy_ships_group.empty()
                     self.enemy_ships_advanced_group.empty()
 
@@ -216,6 +231,7 @@ class Game:
                     if self.crash or self.crash_advanced:
                         explosion_player = Explosion(self.player_ship.rect[0], self.player_ship.rect[1],
                                                      EXPLOSION_PLAYER_CRASH_SPRITES)
+                        self.explosion_group.add(explosion_player)
                         if self.crash:
                             self.points += 10
                         if self.crash_advanced:
@@ -224,7 +240,7 @@ class Game:
                     if self.player_kill:
                         explosion_player = Explosion(self.player_ship.rect[0], self.player_ship.rect[1],
                                                      EXPLOSION_PLAYER_SPRITES)
-                    self.explosion_group.add(explosion_player)
+                        self.explosion_group.add(explosion_player)
                     self.player_ship.player_lives -= 1
                     self.text_player_lives = self.font.render(str(self.player_ship.player_lives), True, "green", None)
                     self.player_ship.kill()
@@ -248,8 +264,6 @@ class Game:
                 if self.kill_count >= 10:
                     self.enemy_ships_advanced_group.add(EnemyShipAdvanced(1920, ENEMY_SHIP_ADVANCED_SPRITES))
                     self.kill_count = 0
-                self.explosion_group.draw(WINDOW)
-                self.explosion_group.update()
 
                 self.points_text = self.font.render(f"POINTS: {self.points:010d}", True, "green", None)
 

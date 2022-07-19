@@ -69,7 +69,7 @@ class EnemyProjectile(pygame.sprite.Sprite):
 
 
 class EnemyShipAdvanced(EnemyShip):
-    """Enemy class, responsible for creating the enemies the player has to fight"""
+    """Enemy class, responsible for creating advanced enemies the player has to fight"""
     def __init__(self, width, image_list):
         super().__init__(width, image_list)
         self.width = width
