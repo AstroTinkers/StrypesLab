@@ -42,9 +42,9 @@ class PlayerShip(pygame.sprite.Sprite):
             self.rect.x += self.speed * delta_time
         self.rect.clamp_ip(window_limit)
 
-    def create_projectile(self, w_type, image_laser, image_torpedo, delta_time):
+    def create_projectile(self, w_type, image_type, delta_time):
         self.last_shot = pygame.time.get_ticks()
-        return PlayerProjectile(self.rect[0], self.rect[1], w_type, image_laser, image_torpedo, delta_time)
+        return PlayerProjectile(self.rect[0], self.rect[1], w_type, image_type, delta_time)
 
 
 class PlayerProjectile(pygame.sprite.Sprite):
@@ -52,11 +52,11 @@ class PlayerProjectile(pygame.sprite.Sprite):
 
     fire_left = True
 
-    def __init__(self, x, y, w_type, image_laser, image_torpedo, delta_time):
+    def __init__(self, x, y, w_type, image_type, delta_time):
         super().__init__()
         self.type = w_type
         if self.type == "laser":
-            self.image = image_laser
+            self.image = image_type
 
             # Alternate fire between left and right laser on the ship
             if PlayerProjectile.fire_left:
@@ -66,7 +66,7 @@ class PlayerProjectile(pygame.sprite.Sprite):
                 self.rect = self.image.get_rect(center=(x + 129, y))
                 PlayerProjectile.fire_left = True
         else:
-            self.image = image_torpedo
+            self.image = image_type
             self.rect = self.image.get_rect(center=(x + 70, y))
         self.mask = pygame.mask.from_surface(self.image)
         self.speed = 1500
