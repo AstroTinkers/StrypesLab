@@ -20,50 +20,45 @@ def load_sounds(sounds):
             sounds[key] = os.path.join(dirpath, name)
 
 
-class MovingBackground:
-    """Create the moving stars in the background, simulating movement"""
-    def __init__(self):
-        self.bg_stars = SMALL_STARS
-        self.rect_BG_img_stars = self.bg_stars.get_rect()
-        self.bgY1s = 0
-        self.bgX1s = 0
-        self.bgY2s = self.rect_BG_img_stars.height
-        self.bgX2s = 0
-        self.movingSpeed_stars = 10 * DeltaTime
+def load_sprite_animations(sprites):
+    for dirpath, dirnames, filenames in os.walk("./ASSETS/SPRITE_ANIMATIONS"):
+        for name in dirnames:
+            key = name
+            path = str(os.path.join(dirpath, name))
+            sprites[key] = SpriteList(f"{path}/*.png").image_list()
 
-        self.bg_small_stars = BIG_STARS
-        self.rect_BG_img_small_stars = self.bg_small_stars.get_rect()
-        self.bgY1a = 0
-        self.bgX1a = 0
-        self.bgY2a = self.rect_BG_img_small_stars.height
-        self.bgX2a = 0
-        self.movingSpeed_small_stars = 30 * DeltaTime
 
-    def update(self):
-        self.bgY1s += self.movingSpeed_stars
-        self.bgY2s += self.movingSpeed_stars
-        self.bgY1a += self.movingSpeed_small_stars
-        self.bgY2a += self.movingSpeed_small_stars
-        if self.bgY1s >= self.rect_BG_img_stars.height:
-            self.bgY1s = -self.rect_BG_img_stars.height
-        if self.bgY2s >= self.rect_BG_img_stars.height:
-            self.bgY2s = -self.rect_BG_img_stars.height
-        if self.bgY1a >= self.rect_BG_img_small_stars.height:
-            self.bgY1a = -self.rect_BG_img_small_stars.height
-        if self.bgY2a >= self.rect_BG_img_small_stars.height:
-            self.bgY2a = -self.rect_BG_img_small_stars.height
+def load_images(images):
+    for dirpath, dirnames, filenames in os.walk("./ASSETS/IMAGES"):
+        for name in filenames:
+            key = name[:-4]
+            path = str(os.path.join(dirpath, name))
+            images[key] = pygame.image.load(path).convert_alpha()
 
-    def render(self):
-        WINDOW.blit(self.bg_stars, (self.bgX1s, self.bgY1s))
-        WINDOW.blit(self.bg_stars, (self.bgX2s, self.bgY2s))
-        WINDOW.blit(self.bg_small_stars, (self.bgX1a, self.bgY1a))
-        WINDOW.blit(self.bg_small_stars, (self.bgX2a, self.bgY2a))
+
+def letter_change(pos, number):
+    if pos + number > 90:
+        pos = 65
+    elif pos + number < 65:
+        pos = 90
+    else:
+        pos += number
+    return pos
+
+
+def letter_pos(pos, screen):
+    if pos == 0:
+        screen.blit(POS_1, (0, 0))
+    if pos == 1:
+        screen.blit(POS_2, (0, 0))
+    if pos == 2:
+        screen.blit(POS_3, (0, 0))
 
 
 class Game:
     """Main game class - everything runs from here"""
     def __init__(self):
-        self.bg_animated = MovingBackground()
+        self.bg_animated = MovingBackground(WINDOW, SMALL_STARS, BIG_STARS, 10, 30, DeltaTime)
         self.font = pygame.font.Font("./ASSETS/crystal.ttf", 42)
         self.score = 0
         self.score_text = self.font.render(f"SCORE: {self.score:010d}", True, "green", None)
@@ -105,22 +100,19 @@ class Game:
         # Pause
         self.pause = False
 
-    def enemy_destroyed(self, enemy_group, play):
+    def enemy_destroyed(self, enemy_group, play, enemy_type):
         for enemy in enemy_group:
             enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY_SPRITES)
             self.explosion_group.add(enemy_explosion)
-            self.score += 10
-            self.kill_count += 1
+            if enemy_type == 'advanced':
+                self.score += 50
+            else:
+                self.score += 10
+                self.kill_count += 1
+            if play and enemy_type == 'advanced':
+                pygame.mixer.Sound.play(ENEMY_ADVANCED_EXPLOSION_SOUND)
             if play:
                 pygame.mixer.Sound.play(ENEMY_EXPLOSION_SOUND)
-
-    def advanced_enemy_destroyed(self, enemy_group, play):
-        for enemy in enemy_group:
-            enemy_explosion = Explosion(enemy.rect.x, enemy.rect.y, EXPLOSION_ENEMY_SPRITES)
-            self.explosion_group.add(enemy_explosion)
-            self.score += 50
-            if play:
-                pygame.mixer.Sound.play(ENEMY_ADVANCED_EXPLOSION_SOUND)
 
     def menu_animations(self):
         WINDOW.blit(BACKGROUND, (0, 0))
@@ -130,26 +122,20 @@ class Game:
         self.player_group.update()
 
     def new_game(self):
-        while True:
+        run = True
+        while run:
             if not self.pause:
                 current_time = pygame.time.get_ticks()
 
-                # Draw and animate the background
+                # Draw and render the background
                 WINDOW.blit(BACKGROUND, (0, 0))
                 self.bg_animated.render()
-
-                # Draw the icons and text
-                WINDOW.blit(TORPEDO_ICON, (50, 1010))
-                WINDOW.blit(self.text_torpedoes, (10, 1015))
-                WINDOW.blit(PLAYER_ICON, (1820, 1010))
-                WINDOW.blit(self.text_player_lives, (1880, 1015))
-                WINDOW.blit(self.score_text, (782, 20))
 
                 # Draw player projectiles
                 self.lasers_group.draw(WINDOW)
                 self.torpedoes_group.draw(WINDOW)
 
-                # Draw player ship
+                # Draw and animate the player ship
                 self.player_group.draw(WINDOW)
                 self.player_ship.move(DeltaTime, WINDOW_LIMIT)
 
@@ -174,12 +160,12 @@ class Game:
                 # Check if an enemy is hit by laser
                 self.enemy_kill = pygame.sprite.groupcollide(self.lasers_group, self.enemy_ships_group, True, True)
                 if self.enemy_kill:
-                    self.enemy_destroyed(self.enemy_kill, True)
+                    self.enemy_destroyed(self.enemy_kill, True, 'regular')
 
                 self.enemy_advanced_kill = pygame.sprite.groupcollide(self.lasers_group,
                                                                       self.enemy_ships_advanced_group, True, True)
                 if self.enemy_advanced_kill:
-                    self.advanced_enemy_destroyed(self.enemy_advanced_kill, True)
+                    self.enemy_destroyed(self.enemy_advanced_kill, True, 'advanced')
 
                 # Check if an enemy is hit by torpedo
                 self.torpedo_hit_enemy = pygame.sprite.groupcollide(self.torpedoes_group, self.enemy_ships_group, True,
@@ -189,11 +175,11 @@ class Game:
                                                                              False)
                 if self.torpedo_hit_enemy or self.torpedo_hit_advanced_enemy:
                     if self.torpedo_hit_enemy:
-                        self.enemy_destroyed(self.enemy_ships_group, False)
-                        self.advanced_enemy_destroyed(self.enemy_ships_advanced_group, False)
+                        self.enemy_destroyed(self.enemy_ships_group, False, 'regular')
+                        self.enemy_destroyed(self.enemy_ships_advanced_group, False, 'advanced')
                     if self.torpedo_hit_advanced_enemy:
-                        self.enemy_destroyed(self.enemy_ships_group, False)
-                        self.advanced_enemy_destroyed(self.torpedo_hit_advanced_enemy, False)
+                        self.enemy_destroyed(self.enemy_ships_group, False, 'regular')
+                        self.enemy_destroyed(self.torpedo_hit_advanced_enemy, False, 'advanced')
                     pygame.mixer.Sound.play(ENEMY_EXPLOSION_SOUND)
                     pygame.mixer.Sound.play(ENEMY_ADVANCED_EXPLOSION_SOUND)
                     self.enemy_ships_group.empty()
@@ -224,15 +210,20 @@ class Game:
 
                 # Check if player group is empty and add draw new player ship sprite if player has lives left
                 if len(self.player_group) == 0:
-                    if self.player_ship.player_lives > 0 and current_time - self.death_time > 1000:
-                        self.player_group.add(self.player_ship)
-                        self.torpedoes = 3
-                        self.player_ship.rect = self.player_ship.image.get_rect(center=(960, 1080))
+                    if self.player_ship.player_lives > 0:
+                        if current_time - self.death_time > 1000:
+                            self.player_group.add(self.player_ship)
+                            self.torpedoes = 3
+                            self.player_ship.rect = self.player_ship.image.get_rect(center=(960, 1080))
+                    else:
+                        self.end_game_score()
+                        run = False
 
                 # Check if enemies are less than max number of enemies and add more
                 if self.max_enemies > len(self.enemy_ships_group) >= 0 and current_time - self.enemy_spawn_time > 1000:
                     self.enemy_ships_group.add(EnemyShip(1920, ENEMY_SHIP_SPRITES))
                     self.enemy_spawn_time = pygame.time.get_ticks()
+                    # Increase max number of active enemies based on player score
                     if self.score / 100 >= self.max_enemies:
                         self.max_enemies += 2
 
@@ -246,7 +237,7 @@ class Game:
                     if event.type == pygame.QUIT:
                         exit_game()
 
-                    # Firing projectiles
+                    # Keypress events
                     if event.type == pygame.KEYDOWN:
                         if self.player_group:
                             if event.key == pygame.K_SPACE and current_time - self.player_ship.last_shot > 150:
@@ -259,18 +250,14 @@ class Game:
                                 pygame.mixer.Sound.play(PLAYER_TORPEDO_SOUND)
                                 self.torpedoes -= 1
                                 self.text_torpedoes = self.font.render(str(self.torpedoes), True, "green", None)
-                        if event.key == pygame.K_BACKSPACE:
-                            self.player_ship.player_lives = 3
+
+                        # Cheat for testing purposes - uncomment during development
+                        # if event.key == pygame.K_BACKSPACE:
+                        #     self.player_ship.player_lives = 3
 
                         # Game menus - FIX THIS!
-                        if event.key == pygame.K_p:
+                        if event.key == pygame.K_ESCAPE:
                             self.pause = not self.pause
-
-                        if event.key == pygame.K_q:
-                            exit_game()
-
-                        if event.key == pygame.K_m:
-                            game.game()
 
                 # Award lives and torpedoes on milestones:
                 if self.score / 1000 >= self.life_threshold:
@@ -290,7 +277,14 @@ class Game:
                 self.enemy_lasers_group.update()
                 self.explosion_group.update()
 
-                # Update the player attributes
+                # Draw the icons and text
+                WINDOW.blit(TORPEDO_ICON, (50, 1010))
+                WINDOW.blit(self.text_torpedoes, (10, 1015))
+                WINDOW.blit(PLAYER_ICON, (1820, 1010))
+                WINDOW.blit(self.text_player_lives, (1880, 1015))
+                WINDOW.blit(self.score_text, (782, 20))
+
+                # Render the player attributes
                 self.score_text = self.font.render(f"SCORE: {self.score:010d}", True, "green", None)
                 self.text_torpedoes = self.font.render(str(self.torpedoes), True, "green", None)
                 self.text_player_lives = self.font.render(str(self.player_ship.player_lives), True, "green", None)
@@ -300,64 +294,137 @@ class Game:
                 pygame.display.update()
                 FramesPerSec.tick(FPS)
 
-            # Resume paused game - Make part of menu
+            # Pause menu
             else:
-                for event in pygame.event.get():
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_p:
-                            self.pause = not self.pause
-                        if event.key == pygame.K_q:
-                            exit_game()
+                run_pause = True
+                WINDOW.blit(PAUSE, (0, 0))
+                while run_pause:
+                    for event in pygame.event.get():
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_r:
+                                self.pause = not self.pause
+                                run_pause = False
+                            if event.key == pygame.K_q:
+                                run = False
+                                run_pause = False
+                            if event.key == pygame.K_m:
+                                pygame.mixer.pause()
+                            if event.key == pygame.K_u:
+                                pygame.mixer.unpause()
+                    pygame.transform.scale(WINDOW, (WIDTH, HEIGHT), RESOLUTION)
+                    pygame.display.update()
+                    FramesPerSec.tick(FPS)
 
-    def how_to_play(self):
+    def display_overlay(self, picture):
         run = True
         self.player_group.empty()
         self.player_group.add(self.player_ship)
-        self.bg_animated.movingSpeed_small_stars = 30 * DeltaTime
-        self.bg_animated.movingSpeed_stars = 10 * DeltaTime
+        self.bg_animated.mov_speed_img_front = 30 * DeltaTime
+        self.bg_animated.mov_speed_img_back = 10 * DeltaTime
         while run:
             self.menu_animations()
-            WINDOW.blit(HOW_TO_PLAY, (0, 0))
+            WINDOW.blit(picture, (0, 0))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     exit_game()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        self.bg_animated.movingSpeed_small_stars = 3000 * DeltaTime
-                        self.bg_animated.movingSpeed_stars = 1000 * DeltaTime
+                        self.bg_animated.mov_speed_img_front = 3000 * DeltaTime
+                        self.bg_animated.mov_speed_img_back = 1000 * DeltaTime
                         run = False
             pygame.transform.scale(WINDOW, (WIDTH, HEIGHT), RESOLUTION)
             pygame.display.update()
-            # FramesPerSec.tick(FPS)
+            FramesPerSec.tick(FPS)
 
-    def high_score(self):  # FIX THIS!
-        self.menu_animations()
-
-        pygame.transform.scale(WINDOW, (WIDTH, HEIGHT), RESOLUTION)
-        pygame.display.update()
-        FramesPerSec.tick(FPS)
-
-    def quit_game(self):  # FIX THIS!
-        pass
-
-    def main_menu(self):  # FIX THIS!
-        while True:
+    def end_game_score(self):
+        run = True
+        letters = [65, 65, 65]
+        current_index = 0
+        score_font = pygame.font.Font("./ASSETS/crystal.ttf", 80)
+        while run:
             self.menu_animations()
-
+            WINDOW.blit(GAME_OVER, (0, 0))
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    exit_game()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_DOWN:
+                        letters[current_index] = letter_change(letters[current_index], 1)
+                    if event.key == pygame.K_UP:
+                        letters[current_index] = letter_change(letters[current_index], -1)
+                    if event.key == pygame.K_RETURN:
+                        if current_index < 2:
+                            current_index += 1
+                        else:
+                            with open('scores.txt', 'r') as file:
+                                scores_to_sort = file.readlines()
+                                scores_dict = {}
+                                scores_to_show = [score for score in scores_to_sort if score != "\n"]
+                                for score in range(len(scores_to_show)):
+                                    scores_to_show[score].replace("\n", "")
+                                if len(scores_to_show) > 9:
+                                    scores_to_show.pop()
+                                scores_to_show.append(f"{chr(letters[0])}{chr(letters[1])}{chr(letters[2])}"
+                                                      f"{self.score:010d}")
+                                for score in scores_to_show:
+                                    scores_dict[score[:3]] = score[3:14]
+                                print(scores_dict)
+                                file.close()
+                            with open('scores.txt', 'w') as file:
+                                for score in scores_to_show:
+                                    file.write(f"{score}\n")
+                            run = False
+                    if event.key == pygame.K_BACKSPACE:
+                        if current_index > 0:
+                            current_index -= 1
+            score = score_font.render(f"{chr(letters[0])}{chr(letters[1])}{chr(letters[2])}: {self.score:010d}", True,
+                                      "green", None)
+            letter_pos(current_index, WINDOW)
+            WINDOW.blit(score, (660, 500))
 
             pygame.transform.scale(WINDOW, (WIDTH, HEIGHT), RESOLUTION)
             pygame.display.update()
             FramesPerSec.tick(FPS)
 
-    def game(self):  # FIX THIS!
+    def scores(self):
+        run = True
+        self.player_group.empty()
+        self.player_group.add(self.player_ship)
+        self.bg_animated.mov_speed_img_front = 30 * DeltaTime
+        self.bg_animated.mov_speed_img_back = 10 * DeltaTime
+        score_font = pygame.font.Font("./ASSETS/crystal.ttf", 80)
+        line = 100
+        with open('scores.txt', 'r') as file:
+            scores_to_sort = file.readlines()
+            scores_to_show = [score for score in scores_to_sort if score != "\n"]
+            for score in range(len(scores_to_show)):
+                scores_to_show[score].replace("\n", "")
+                file.close()
+        while run:
+            self.menu_animations()
+            for score in scores_to_show:
+                score_to_show = score_font.render(f"{score}", True, "green", None)
+                WINDOW.blit(score_to_show, (660, line))
+                line += 100
+                if score == scores_to_show[-1]:
+                    line = 100
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit_game()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.bg_animated.mov_speed_img_front = 3000 * DeltaTime
+                        self.bg_animated.mov_speed_img_back = 1000 * DeltaTime
+                        run = False
+            WINDOW.blit(score_font.render("Press Esc to return to Main Menu", True, "green", None), (495, 850))
+            pygame.transform.scale(WINDOW, (WIDTH, HEIGHT), RESOLUTION)
+            pygame.display.update()
+            FramesPerSec.tick(FPS)
+
+    def main_menu(self):
         pygame.mixer.Sound.play(MENU_MUSIC)
         self.player_group.empty()
         self.player_group.add(self.player_ship)
-        self.bg_animated.movingSpeed_small_stars = 2000 * DeltaTime
-        self.bg_animated.movingSpeed_stars = 500 * DeltaTime
+        self.bg_animated.mov_speed_img_front = 2000 * DeltaTime
+        self.bg_animated.mov_speed_img_back = 500 * DeltaTime
         while True:
             game.menu_animations()
             WINDOW.blit(TITLE, (0, 0))
@@ -370,10 +437,20 @@ class Game:
                         pygame.mixer.fadeout(2000)
                         pygame.mixer.Sound.play(GAMEPLAY_MUSIC, -1, fade_ms=5000)
                         Game().new_game()
-                    if event.key == pygame.K_s:
-                        game.high_score()
+                        self.player_group.add(self.player_ship)
                     if event.key == pygame.K_h:
-                        game.how_to_play()
+                        self.display_overlay(HOW_TO_PLAY)
+                    if event.key == pygame.K_s:
+                        self.scores()
+                    if event.key == pygame.K_c:
+                        self.display_overlay(CREDITS)
+                    if event.key == pygame.K_q:
+                        exit_game()
+                    if event.key == pygame.K_m:
+                        pygame.mixer.pause()
+                    if event.key == pygame.K_u:
+                        pygame.mixer.unpause()
+
             pygame.transform.scale(WINDOW, (WIDTH, HEIGHT), RESOLUTION)
             pygame.display.update()
             FramesPerSec.tick(FPS)
@@ -383,24 +460,22 @@ class Game:
 pygame.mixer.pre_init(44100, 16, 2, 1096)
 pygame.init()
 
-
 # Game global parameters
 WIDTH, HEIGHT = get_monitors()[0].width, get_monitors()[0].height
 RESOLUTION = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
 WINDOW = pygame.Surface((1920, 1080))
 WINDOW_LIMIT = WINDOW.get_rect()
-GAME_START = pygame.image.load("./ASSETS/background.png").convert()
-BACKGROUND = pygame.image.load("./ASSETS/background.png").convert()
-SMALL_STARS = pygame.image.load("./ASSETS/stars_small.png").convert_alpha()
-BIG_STARS = pygame.image.load("./ASSETS/stars_big.png").convert_alpha()
+TORPEDO_COUNT = 3
 
 # Animation sprites
-EXPLOSION_ENEMY_SPRITES = SpriteList("./ASSETS/EXPLOSION_ENEMY/explosion_enemy*.png").image_list()
-EXPLOSION_PLAYER_CRASH_SPRITES = SpriteList("./ASSETS/EXPLOSION_PLAYER_CRASH/explosion_player_crash*.png").image_list()
-EXPLOSION_PLAYER_SPRITES = SpriteList("./ASSETS/EXPLOSION_PLAYER/explosion_player*.png").image_list()
-PLAYER_SHIP_SPRITES = SpriteList("./ASSETS/PLAYER/player*.png").image_list()
-ENEMY_SHIP_SPRITES = SpriteList("./ASSETS/ENEMY/enemy*.png").image_list()
-ENEMY_SHIP_ADVANCED_SPRITES = SpriteList("./ASSETS/ENEMY_ADVANCED/enemy_advanced*.png").image_list()
+sprite_animation_assets = {}
+load_sprite_animations(sprite_animation_assets)
+PLAYER_SHIP_SPRITES = sprite_animation_assets['PLAYER_SHIP']
+EXPLOSION_PLAYER_SPRITES = sprite_animation_assets['EXPLOSION_PLAYER']
+EXPLOSION_PLAYER_CRASH_SPRITES = sprite_animation_assets['EXPLOSION_PLAYER_CRASH']
+ENEMY_SHIP_SPRITES = sprite_animation_assets['ENEMY_SHIP']
+ENEMY_SHIP_ADVANCED_SPRITES = sprite_animation_assets['ENEMY_SHIP_ADVANCED']
+EXPLOSION_ENEMY_SPRITES = sprite_animation_assets['EXPLOSION_ENEMY']
 
 # Game audio assets
 audio_assets = {}
@@ -420,19 +495,31 @@ ENEMY_EXPLOSION_SOUND.set_volume(0.1)
 ENEMY_ADVANCED_EXPLOSION_SOUND = pygame.mixer.Sound(audio_assets['enemy_advanced_explosion'])
 ENEMY_ADVANCED_EXPLOSION_SOUND.set_volume(0.1)
 MENU_MUSIC = pygame.mixer.Sound(audio_assets['menu_music'])
+MENU_MUSIC.set_volume(0.4)
 GAMEPLAY_MUSIC = pygame.mixer.Sound(audio_assets['gameplay_music'])
 GAMEPLAY_MUSIC.set_volume(0.2)
 
-# Icons, counters and misc images
-PLAYER_ICON = pygame.image.load("./ASSETS/player_icon.png").convert_alpha()
-PLAYER_LASER = pygame.image.load("./ASSETS/laser.png").convert_alpha()
-PLAYER_TORPEDO = pygame.image.load("./ASSETS/torpedo.png").convert_alpha()
-ENEMY_PROJECTILE = pygame.image.load("./ASSETS/laser_enemy.png").convert_alpha()
-ENEMY_ADVANCED_PROJECTILE = pygame.image.load("./ASSETS/laser_enemy_advanced.png").convert_alpha()
-TORPEDO_ICON = pygame.image.load("./ASSETS/torpedo_icon.png").convert_alpha()
-TORPEDO_COUNT = 3
-TITLE = pygame.image.load("./ASSETS/title.png").convert_alpha()
-HOW_TO_PLAY = pygame.image.load("./ASSETS/how_to_play.png")
+# Game images
+image_assets = {}
+load_images(image_assets)
+BACKGROUND = image_assets['background']
+SMALL_STARS = image_assets['stars_small']
+BIG_STARS = image_assets['stars_big']
+TITLE = image_assets['title']
+PLAYER_LASER = image_assets['laser']
+PLAYER_TORPEDO = image_assets['torpedo']
+PLAYER_ICON = image_assets['player_icon']
+TORPEDO_ICON = image_assets['torpedo_icon']
+ENEMY_PROJECTILE = image_assets['laser_enemy']
+ENEMY_ADVANCED_PROJECTILE = image_assets['laser_enemy_advanced']
+HOW_TO_PLAY = image_assets['how_to_play']
+CREDITS = image_assets['credits']
+PAUSE = image_assets['pause']
+GAME_OVER = image_assets['game_over']
+POS_1 = image_assets['pos_1']
+POS_2 = image_assets['pos_2']
+POS_3 = image_assets['pos_3']
+
 
 pygame.display.set_caption("Space Gauntlet")
 pygame.mouse.set_visible(False)
@@ -440,5 +527,6 @@ FPS = 60
 FramesPerSec = pygame.time.Clock()
 DeltaTime = FramesPerSec.tick(FPS) / 1000
 game = Game()
+
 if __name__ == "__main__":
-    game.game()
+    game.main_menu()
