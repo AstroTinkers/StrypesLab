@@ -12,7 +12,7 @@ class Game:
     def __init__(self):
         self.bg_animated = MovingBackground(WINDOW, SMALL_STARS, BIG_STARS, 10, 30, DeltaTime)
         self.font = pygame.font.Font("./ASSETS/crystal.ttf", 42)
-        self.score = 3000
+        self.score = 0
         self.score_text = self.font.render(f"SCORE: {self.score:010d}", True, "green", None)
         self.kill_count = 0
         self.life_threshold = 2
