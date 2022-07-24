@@ -12,7 +12,7 @@ class PlayerShip(pygame.sprite.Sprite):
         self.image = self.images[self.index]
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(center=(width/2, height - 50))
-        self.player_lives = 1
+        self.player_lives = 3
         self.last_shot = pygame.time.get_ticks()
         self.speed = 500
         self.counter = 0

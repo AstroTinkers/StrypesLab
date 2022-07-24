@@ -1,6 +1,16 @@
 import glob
-
+import os
 import pygame
+
+
+def load_sprite_animations():
+    sprites = {}
+    for dirpath, dirnames, filenames in os.walk("./ASSETS/SPRITE_ANIMATIONS"):
+        for name in dirnames:
+            key = name
+            path = str(os.path.join(dirpath, name))
+            sprites[key] = [pygame.image.load(img).convert_alpha() for img in glob.glob(f"{path}/*.png")]
+    return sprites
 
 
 class MovingBackground:
@@ -10,51 +20,39 @@ class MovingBackground:
         self.img_back = img_back
         self.delta_time = delta_time
         self.rect_img_back = self.img_back.get_rect()
-        self.img_back_Y1 = 0
-        self.img_back_X1 = 0
-        self.img_back_Y2 = self.rect_img_back.height
-        self.img_back_X2 = 0
+        self.img_back_XY1 = (0, 0)
+        # self.img_back_X1 = 0
+        self.img_back_XY2 = (0, self.rect_img_back.height)
+        # self.img_back_X2 = 0
         self.mov_speed_img_back = speed_back_img * self.delta_time
 
         self.img_front = img_front
         self.rect_img_front = self.img_front.get_rect()
-        self.img_front_Y1 = 0
-        self.img_front_X1 = 0
-        self.img_front_Y2 = self.rect_img_front.height
-        self.img_front_X2 = 0
+        self.img_front_XY1 = (0, 0)
+        # self.img_front_X1 = 0
+        self.img_front_XY2 = (0, self.rect_img_front.height)
+        # self.img_front_X2 = 0
         self.mov_speed_img_front = speed_front_img * self.delta_time
 
     def update(self):
-        self.img_back_Y1 += self.mov_speed_img_back
-        self.img_back_Y2 += self.mov_speed_img_back
-        self.img_front_Y1 += self.mov_speed_img_front
-        self.img_front_Y2 += self.mov_speed_img_front
-        if self.img_back_Y1 >= self.rect_img_back.height:
-            self.img_back_Y1 = -self.rect_img_back.height
-        if self.img_back_Y2 >= self.rect_img_back.height:
-            self.img_back_Y2 = -self.rect_img_back.height
-        if self.img_front_Y1 >= self.rect_img_front.height:
-            self.img_front_Y1 = -self.rect_img_front.height
-        if self.img_front_Y2 >= self.rect_img_front.height:
-            self.img_front_Y2 = -self.rect_img_front.height
+        self.img_back_XY1 = (0, self.img_back_XY1[1] + self.mov_speed_img_back)
+        self.img_back_XY2 = (0, self.img_back_XY2[1] + self.mov_speed_img_back)
+        self.img_front_XY1 = (0, self.img_back_XY1[1] + self.mov_speed_img_front)
+        self.img_front_XY2 = (0, self.img_back_XY2[1] + self.mov_speed_img_front)
+        if self.img_back_XY1[1] >= self.rect_img_back.height:
+            self.img_back_XY1 = (0, -self.rect_img_back.height)
+        if self.img_back_XY2[1] >= self.rect_img_back.height:
+            self.img_back_XY2 = (0, -self.rect_img_back.height)
+        if self.img_front_XY1[1] >= self.rect_img_front.height:
+            self.img_front_XY1 = (0, -self.rect_img_front.height)
+        if self.img_front_XY2[1] >= self.rect_img_front.height:
+            self.img_front_XY2 = (0, -self.rect_img_front.height)
 
     def render(self):
-        self.game_window.blit(self.img_back, (self.img_back_X1, self.img_back_Y1))
-        self.game_window.blit(self.img_back, (self.img_back_X2, self.img_back_Y2))
-        self.game_window.blit(self.img_front, (self.img_front_X1, self.img_front_Y1))
-        self.game_window.blit(self.img_front, (self.img_front_X2, self.img_front_Y2))
-
-
-class SpriteList:
-    def __init__(self, file_path):
-        super().__init__()
-        self.image_glob = glob.glob(file_path)
-        self.images = []
-
-    def image_list(self):
-        for img in self.image_glob:
-            self.images.append(pygame.image.load(img).convert_alpha())
-        return self.images
+        self.game_window.blit(self.img_back, self.img_back_XY1)
+        self.game_window.blit(self.img_back, self.img_back_XY2)
+        self.game_window.blit(self.img_front, self.img_front_XY1)
+        self.game_window.blit(self.img_front, self.img_front_XY2)
 
 
 class Explosion(pygame.sprite.Sprite):

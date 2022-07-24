@@ -80,7 +80,6 @@ class EnemyShipAdvanced(EnemyShip):
         self.rect = self.image.get_rect(center=(random.randint(0, self.width - 200), -100))
         self.last_shot = pygame.time.get_ticks()
         self.speed = 200
-        self.counter = 0
         self.target = 0
 
     def move(self, delta_time, height):
@@ -103,6 +102,60 @@ class EnemyAdvancedProjectile(EnemyProjectile):
         super().__init__(x, y, image_laser, delta_time, height)
         self.image = image_laser
         self.rect = self.image.get_rect(center=(x + 120, y + 381))
+        self.mask = pygame.mask.from_surface(self.image)
+        self.speed = 1000
+        self.delta_time = delta_time
+        self.height = height
+
+
+class EnemyBoss(EnemyShip):
+    def __init__(self, width, image_list):
+        super().__init__(width, image_list)
+        self.width = width
+        self.images = image_list
+        self.index = 0
+        self.image = self.images[self.index]
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect = self.image.get_rect(center=(random.randint(0, self.width - 300), -200))
+        self.last_shot = pygame.time.get_ticks()
+        self.speed = 150
+        self.move_counter = 0
+        self.target = 0
+        self.life = 100
+
+    def move(self, delta_time, height):
+        if self.rect.y < height - (height - 50):
+            self.rect.y += self.speed * delta_time
+        if self.rect.x < self.target:
+            self.rect.x = self.rect.x + self.speed * delta_time
+            self.target = self.width - 372
+            self.move_counter += 1
+        else:
+            self.rect.x = self.rect.x - self.speed * delta_time
+            self.target = 0
+            self.move_counter += 1
+        if 620 > self.move_counter >= 500:
+            self.rect.y += (self.speed*4) * delta_time
+            self.move_counter += 1
+        if 1100 > self.move_counter >= 620:
+            self.rect.y -= self.speed * delta_time
+            self.move_counter += 1
+        if self.move_counter == 1100:
+            self.move_counter = 0
+
+    def create_projectiles(self, image_laser, delta_time, height, laser_type):
+        self.last_shot = pygame.time.get_ticks()
+        return EnemyBossProjectile(self.rect[0], self.rect[1], image_laser, delta_time, height, laser_type)
+
+
+class EnemyBossProjectile(EnemyProjectile):
+    def __init__(self, x, y, image_laser, delta_time, height, laser_type):
+        super().__init__(x, y, image_laser, delta_time, height)
+        self.image = image_laser
+        if laser_type == "narrow":
+            self.rect = self.image.get_rect(center=(x + 187, y + 473))
+        else:
+            self.rect = self.image.get_rect(center=(x + 187, y + 300))
         self.mask = pygame.mask.from_surface(self.image)
         self.speed = 1000
         self.delta_time = delta_time
