@@ -13,7 +13,7 @@ class Game:
     def __init__(self):
         self.bg_animated = MovingBackground(WINDOW, SMALL_STARS, BIG_STARS, 10, 30, DeltaTime)
         self.font = pygame.font.Font("./ASSETS/crystal.ttf", 42)
-        self.score = 0
+        self.score = 4990
         self.score_text = self.font.render(f"SCORE: {self.score:010d}", True, "green", None)
 
         # Threshold and event variables
@@ -52,7 +52,7 @@ class Game:
         self.enemy_lasers_group = pygame.sprite.Group()
         self.enemy_advanced_lasers_group = pygame.sprite.Group()
         self.player_kill = {}
-        self.enemy_boss = EnemyBoss(1920, ENEMY_BOSS_SPRITES)
+        self.enemy_boss = None
         self.boss_health = ""
         self.enemy_boss_hit = {}
         self.enemy_boss_torpedo_hit = {}
@@ -117,6 +117,8 @@ class Game:
                     self.music_track.set_volume(0)
                 self.score += 1000
                 self.enemy_boss_spawn = False
+                self.enemy_boss_group.empty()
+                self.enemy_boss = None
                 break
 
     def torpedo_hit(self):
@@ -217,15 +219,15 @@ class Game:
                     self.player_ship.invulnerable = False
 
                     self.crash = pygame.sprite.groupcollide(self.player_group, self.enemy_ships_group, True, True,
-                                                            collided=lambda s1, s2: pygame.sprite.collide_mask(s1, s2) is
-                                                            not None)
+                                                            collided=lambda s1, s2: pygame.sprite.collide_mask(s1, s2)
+                                                            is not None)
                     self.crash_advanced = pygame.sprite.groupcollide(self.player_group, self.enemy_ships_advanced_group,
                                                                      True, True, collided=lambda s1, s2: pygame.sprite.
                                                                      collide_mask(s1, s2) is not None)
 
-                    self.player_kill = pygame.sprite.groupcollide(self.enemy_lasers_group, self.player_group, True, True,
-                                                                  collided=lambda s1, s2: pygame.sprite.collide_mask(s1, s2)
-                                                                  is not None)
+                    self.player_kill = pygame.sprite.groupcollide(self.enemy_lasers_group, self.player_group, True,
+                                                                  True, collided=lambda s1, s2: pygame.sprite.
+                                                                  collide_mask(s1, s2) is not None)
                     if self.crash or self.player_kill or self.crash_advanced or self.crash_boss:
                         if PLAY_SOUND:
                             pygame.mixer.Sound.play(PLAYER_EXPLOSION_SOUND)
@@ -312,6 +314,7 @@ class Game:
                         self.music_track.set_volume(0)
 
                 if self.enemy_boss_spawn:
+                    self.enemy_boss.update()
                     self.boss_shoot_and_move(current_time, ENEMY_BOSS_PROJECTILE_NARROW,
                                              ENEMY_BOSS_PROJECTILE_WIDE, ENEMY_ADVANCED_LASER_SOUND)
                     self.enemy_boss_hit = pygame.sprite.groupcollide(self.lasers_group, self.enemy_boss_group, True,
@@ -324,7 +327,6 @@ class Game:
                                                                  collided=lambda s1, s2: pygame.sprite.collide_mask(s1,
                                                                                                                     s2)
                                                                  is not None)
-                    self.enemy_boss.update()
                     self.boss_health = self.font.render(f"BOSS HEALTH  {self.enemy_boss.life:03d}", True, "green", None)
 
                 # Update background and groups
