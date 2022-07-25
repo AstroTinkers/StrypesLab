@@ -320,6 +320,7 @@ class Game:
                     self.enemy_boss_hit = pygame.sprite.groupcollide(self.lasers_group, self.enemy_boss_group, True,
                                                                      False, collided=lambda s1, s2: pygame.sprite.
                                                                      collide_mask(s1, s2) is not None)
+                    self.boss_health = self.font.render(f"BOSS HEALTH  {self.enemy_boss.life:03d}", True, "green", None)
                     if self.enemy_boss_hit:
                         self.boss_hit(self.enemy_boss_group, PLAY_SOUND, PLAY_MUSIC, 1)
 
@@ -327,7 +328,6 @@ class Game:
                                                                  collided=lambda s1, s2: pygame.sprite.collide_mask(s1,
                                                                                                                     s2)
                                                                  is not None)
-                    self.boss_health = self.font.render(f"BOSS HEALTH  {self.enemy_boss.life:03d}", True, "green", None)
 
                 # Update background and groups
                 self.bg_animated.update()
