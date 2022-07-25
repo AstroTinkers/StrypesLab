@@ -46,6 +46,7 @@ def letter_pos(pos, pos1, pos2, pos3, screen):
         screen.blit(pos3, (0, 0))
 
 
+
 def save_new_score(score):
     scores_file = shelve.open('scores.txt')
     scores_list = []
@@ -87,9 +88,19 @@ def mute_unmute_music(audio_bool, music, volume):
     return audio_bool
 
 
-def play_track(music_track):
+def mute_unmute_visualize(bool_var, screen, img_mute, img_unmute, x, y):
+    if not bool_var:
+        screen.blit(img_mute, (x, y))
+    else:
+        screen.blit(img_unmute, (x, y))
+
+
+def play_track(music_track, volume, bool_var):
     pygame.mixer.fadeout(1000)
+    music_track.set_volume(volume)
     pygame.mixer.Sound.play(music_track, -1, fade_ms=5000)
+    if not bool_var:
+        music_track.set_volume(0)
 
 
 class UserScore:
