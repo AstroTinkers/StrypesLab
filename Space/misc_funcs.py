@@ -87,6 +87,11 @@ def mute_unmute_music(audio_bool, music, volume):
     return audio_bool
 
 
+def play_track(music_track):
+    pygame.mixer.fadeout(1000)
+    pygame.mixer.Sound.play(music_track, -1, fade_ms=5000)
+
+
 class UserScore:
     def __init__(self, id_num, user, score):
         self.id_num = str(id_num)
