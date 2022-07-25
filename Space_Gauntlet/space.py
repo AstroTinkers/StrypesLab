@@ -26,7 +26,7 @@ class Game:
         self.pause = False
 
         # Player ship
-        self.player_ship = PlayerShip(1920, 1080, PLAYER_SHIP_SPRITES)
+        self.player_ship = PlayerShip(1920, 1080, PLAYER_SHIP_SPRITES, PLAYER_SHIP_INVULNERABLE_SPRITES)
         self.player_group = pygame.sprite.Group()
         self.player_group.add(self.player_ship)
         self.text_player_lives = self.font.render(str(self.player_ship.player_lives), True, "green", None)
@@ -213,34 +213,39 @@ class Game:
                     self.torpedo_hit()
 
                 # Check if an enemy collided with player ship or if an enemy killed player ship
-                self.crash = pygame.sprite.groupcollide(self.player_group, self.enemy_ships_group, True, True,
-                                                        collided=lambda s1, s2: pygame.sprite.collide_mask(s1, s2) is
-                                                        not None)
-                self.crash_advanced = pygame.sprite.groupcollide(self.player_group, self.enemy_ships_advanced_group,
-                                                                 True, True, collided=lambda s1, s2: pygame.sprite.
-                                                                 collide_mask(s1, s2) is not None)
+                if current_time - self.death_time > 3000:
+                    self.player_ship.invulnerable = False
 
-                self.player_kill = pygame.sprite.groupcollide(self.enemy_lasers_group, self.player_group, True, True,
-                                                              collided=lambda s1, s2: pygame.sprite.collide_mask(s1, s2)
-                                                              is not None)
-                if self.crash or self.player_kill or self.crash_advanced or self.crash_boss:
-                    if PLAY_SOUND:
-                        pygame.mixer.Sound.play(PLAYER_EXPLOSION_SOUND)
-                    if self.crash or self.crash_advanced or self.crash_boss:
-                        explosion_player = Explosion(self.player_ship.rect[0], self.player_ship.rect[1],
-                                                     EXPLOSION_PLAYER_CRASH_SPRITES)
-                        self.explosion_group.add(explosion_player)
-                        if self.crash:
-                            self.score += 10
-                        if self.crash_advanced:
-                            self.score += 50
-                    if self.player_kill:
-                        explosion_player = Explosion(self.player_ship.rect[0], self.player_ship.rect[1],
-                                                     EXPLOSION_PLAYER_SPRITES)
-                        self.explosion_group.add(explosion_player)
-                    self.player_ship.player_lives -= 1
-                    self.player_ship.kill()
-                    self.death_time = pygame.time.get_ticks()
+                    self.crash = pygame.sprite.groupcollide(self.player_group, self.enemy_ships_group, True, True,
+                                                            collided=lambda s1, s2: pygame.sprite.collide_mask(s1, s2) is
+                                                            not None)
+                    self.crash_advanced = pygame.sprite.groupcollide(self.player_group, self.enemy_ships_advanced_group,
+                                                                     True, True, collided=lambda s1, s2: pygame.sprite.
+                                                                     collide_mask(s1, s2) is not None)
+
+                    self.player_kill = pygame.sprite.groupcollide(self.enemy_lasers_group, self.player_group, True, True,
+                                                                  collided=lambda s1, s2: pygame.sprite.collide_mask(s1, s2)
+                                                                  is not None)
+                    if self.crash or self.player_kill or self.crash_advanced or self.crash_boss:
+                        if PLAY_SOUND:
+                            pygame.mixer.Sound.play(PLAYER_EXPLOSION_SOUND)
+                        if self.crash or self.crash_advanced or self.crash_boss:
+                            explosion_player = Explosion(self.player_ship.rect[0], self.player_ship.rect[1],
+                                                         EXPLOSION_PLAYER_CRASH_SPRITES)
+                            self.explosion_group.add(explosion_player)
+                            if self.crash:
+                                self.score += 10
+                            if self.crash_advanced:
+                                self.score += 50
+                        if self.player_kill:
+                            explosion_player = Explosion(self.player_ship.rect[0], self.player_ship.rect[1],
+                                                         EXPLOSION_PLAYER_SPRITES)
+                            self.explosion_group.add(explosion_player)
+                        self.player_ship.player_lives -= 1
+                        self.player_ship.kill()
+                        self.death_time = pygame.time.get_ticks()
+                else:
+                    self.player_ship.invulnerable = True
 
                 # Check if enemies are less than max number of enemies and add more
                 if not self.enemy_boss_spawn:
@@ -512,6 +517,7 @@ PLAY_SOUND = True
 # Animation sprites
 sprite_animation_assets = load_sprite_animations()
 PLAYER_SHIP_SPRITES = sprite_animation_assets['PLAYER_SHIP']
+PLAYER_SHIP_INVULNERABLE_SPRITES = sprite_animation_assets['PLAYER_SHIP_INVULNERABLE']
 EXPLOSION_PLAYER_SPRITES = sprite_animation_assets['EXPLOSION_PLAYER']
 EXPLOSION_PLAYER_CRASH_SPRITES = sprite_animation_assets['EXPLOSION_PLAYER_CRASH']
 ENEMY_SHIP_SPRITES = sprite_animation_assets['ENEMY_SHIP']

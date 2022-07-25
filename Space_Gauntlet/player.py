@@ -5,10 +5,13 @@ pygame.init()
 
 class PlayerShip(pygame.sprite.Sprite):
     """Main player class, responsible for the player's ship, movement and firing controls"""
-    def __init__(self, width, height, image_list):
+    def __init__(self, width, height, image_list, image_list_invul):
         super().__init__()
-        self.images = image_list
         self.index = 0
+        self.invulnerable = False
+        self.invul_images = image_list_invul
+        self.normal_images = image_list
+        self.images = image_list
         self.image = self.images[self.index]
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(center=(width/2, height - 50))
@@ -20,7 +23,10 @@ class PlayerShip(pygame.sprite.Sprite):
     def update(self):
         engine_animation_speed = 4
         self.counter += 1
-
+        if self.invulnerable:
+            self.images = self.invul_images
+        else:
+            self.images = self.normal_images
         if self.counter >= engine_animation_speed and self.index < len(self.images) - 1:
             self.counter = 0
             self.index += 1
