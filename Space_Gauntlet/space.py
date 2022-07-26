@@ -120,12 +120,8 @@ class Game:
                 break
 
     def torpedo_hit(self):
-        if self.torpedo_hit_enemy:
-            self.enemy_destroyed(self.enemy_ships_group, False, play_sound, 'regular')
-            self.enemy_destroyed(self.enemy_ships_advanced_group, False, play_sound, 'advanced')
-        if self.torpedo_hit_advanced_enemy:
-            self.enemy_destroyed(self.enemy_ships_group, False, play_sound, 'regular')
-            self.enemy_destroyed(self.torpedo_hit_advanced_enemy, False, play_sound, 'advanced')
+        self.enemy_destroyed(self.enemy_ships_group, False, play_sound, 'regular')
+        self.enemy_destroyed(self.torpedo_hit_advanced_enemy, False, play_sound, 'advanced')
         if play_sound:
             pygame.mixer.Sound.play(ENEMY_EXPLOSION_SOUND)
             pygame.mixer.Sound.play(ENEMY_BIG_EXPLOSION_SOUND)
