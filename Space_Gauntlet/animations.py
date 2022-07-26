@@ -21,17 +21,13 @@ class MovingBackground:
         self.delta_time = delta_time
         self.rect_img_back = self.img_back.get_rect()
         self.img_back_XY1 = (0, 0)
-        # self.img_back_X1 = 0
         self.img_back_XY2 = (0, self.rect_img_back.height)
-        # self.img_back_X2 = 0
         self.mov_speed_img_back = speed_back_img * self.delta_time
 
         self.img_front = img_front
         self.rect_img_front = self.img_front.get_rect()
         self.img_front_XY1 = (0, 0)
-        # self.img_front_X1 = 0
         self.img_front_XY2 = (0, self.rect_img_front.height)
-        # self.img_front_X2 = 0
         self.mov_speed_img_front = speed_front_img * self.delta_time
 
     def update(self):

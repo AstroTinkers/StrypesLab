@@ -83,8 +83,3 @@ class PlayerProjectile(pygame.sprite.Sprite):
 
         if self.rect.y < 0:
             self.kill()
-
-
-FPS = 60
-FramesPerSec = pygame.time.Clock()
-DeltaTime = FramesPerSec.tick(FPS) / 1000

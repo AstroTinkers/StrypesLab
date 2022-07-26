@@ -37,14 +37,13 @@ def letter_change(pos, number):
     return pos
 
 
-def letter_pos(pos, pos1, pos2, pos3, screen):
+def letter_pos(pos, pos1, pos2, pos3, screen):  # Changes position of screen pointer under letter
     if pos == 0:
         screen.blit(pos1, (0, 0))
     if pos == 1:
         screen.blit(pos2, (0, 0))
     if pos == 2:
         screen.blit(pos3, (0, 0))
-
 
 
 def save_new_score(score):
@@ -104,6 +103,7 @@ def play_track(music_track, volume, bool_var):
 
 
 class UserScore:
+    """Saves the score with a unique id, to allow for scores with same users' names"""
     def __init__(self, id_num, user, score):
         self.id_num = str(id_num)
         self.user = user
