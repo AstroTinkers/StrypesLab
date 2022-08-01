@@ -120,12 +120,11 @@ class Game:
                 self.enemy_boss = None
                 break
 
-    def torpedo_hit(self, music_track, explosion_anim, explosion_sound_big, explosion_sound_small,
-                    explosion_class_normal, explosion_class):
+    def torpedo_hit(self, music_track, explosion_anim, explosion_sound_big, explosion_sound_small, explosion_class):
         self.enemy_destroyed(self.enemy_ships_group, False, play_sound, 'regular', explosion_anim,
-                             explosion_sound_big, explosion_sound_small, explosion_class_normal)
+                             explosion_sound_big, explosion_sound_small, explosion_class)
         self.enemy_destroyed(self.enemy_ships_advanced_group, False, play_sound, 'advanced', explosion_anim,
-                             explosion_sound_big, explosion_sound_small, explosion_class_normal)
+                             explosion_sound_big, explosion_sound_small, explosion_class)
         if play_sound:
             pygame.mixer.Sound.play(explosion_sound_small)
             pygame.mixer.Sound.play(explosion_sound_big)
@@ -215,7 +214,7 @@ class Game:
 
                 if self.torpedo_hit_enemy or self.torpedo_hit_advanced_enemy or self.enemy_boss_torpedo_hit:
                     self.torpedo_hit(GAMEPLAY_MUSIC, EXPLOSION_ENEMY_SPRITES, ENEMY_BIG_EXPLOSION_SOUND,
-                                     ENEMY_EXPLOSION_SOUND, Explosion, Explosion)
+                                     ENEMY_EXPLOSION_SOUND, Explosion)
 
                 # Check if an enemy collided with player ship or if an enemy killed player ship
                 if current_time - self.death_time > 3000:

@@ -58,17 +58,17 @@ class Explosion(pygame.sprite.Sprite):
         self.index = 0
         self.image = self.images[self.index]
         self.rect = self.image.get_rect(center=(x, y))
-        self.counter = 0
+        self.frame_counter = 0
 
     def update(self):
-        explosion_speed = 4
-        self.counter += 1
+        image_duration_frames = 4
+        self.frame_counter += 1
 
-        if self.counter >= explosion_speed and self.index < len(self.images) - 1:
-            self.counter = 0
+        if self.frame_counter >= image_duration_frames and self.index < len(self.images) - 1:
+            self.frame_counter = 0
             self.index += 1
             self.image = self.images[self.index]
 
         # reset animation index
-        if self.index >= len(self.images) - 1 and self.counter >= explosion_speed:
+        if self.index >= len(self.images) - 1 and self.frame_counter >= image_duration_frames:
             self.kill()

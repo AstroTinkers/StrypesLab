@@ -78,27 +78,27 @@ def screen_update(window, width, height, resolution, clock, fps):
     clock.tick(fps)
 
 
-def mute_unmute_music(audio_bool, music, volume):
-    audio_bool = not audio_bool
-    if audio_bool:
+def mute_unmute_music(play, music, volume):
+    play = not play
+    if play:
         music.set_volume(volume)
     else:
         music.set_volume(0)
-    return audio_bool
+    return play
 
 
-def mute_unmute_visualize(bool_var, screen, img_mute, img_unmute, x, y):
-    if not bool_var:
+def mute_unmute_visualize(play, screen, img_mute, img_unmute, x, y):
+    if not play:
         screen.blit(img_mute, (x, y))
     else:
         screen.blit(img_unmute, (x, y))
 
 
-def play_track(music_track, volume, bool_var):
+def play_track(music_track, volume, play):
     pygame.mixer.fadeout(1000)
     music_track.set_volume(volume)
     pygame.mixer.Sound.play(music_track, -1, fade_ms=5000)
-    if not bool_var:
+    if not play:
         music_track.set_volume(0)
 
 
