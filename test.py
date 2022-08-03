@@ -1,1 +1,2 @@
-print(int(2.6) == float(2.6))
+A, B = 5, -3
+print(max(A + B, A - B, A * B))

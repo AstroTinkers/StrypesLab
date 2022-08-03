@@ -20,7 +20,7 @@ class Game:
         self.kill_count = 0
         self.life_threshold = 2
         self.torpedo_threshold = 1
-        self.max_enemies = 6
+        self.max_enemies = 3
         self.enemy_boss_counter = 1
         self.enemy_boss_spawn = False
         self.pause = False
@@ -156,6 +156,9 @@ class Game:
 
         play_track(self.music_track, 0.3, play_music)
 
+        # Local time variable to set enemy spawn time after starting a new game
+        start_time = pygame.time.get_ticks()
+
         run = True
         while run:
             if not self.pause:
@@ -252,13 +255,13 @@ class Game:
                     self.player_ship.invulnerable = True
 
                 # Check if enemies are less than max number of enemies and add more
-                if not self.enemy_boss_spawn:
+                if not self.enemy_boss_spawn and current_time - start_time > 10000:
                     if self.max_enemies > len(self.enemy_ships_group) >= 0 and current_time - self.enemy_spawn_time > \
                             1000:
                         self.enemy_ships_group.add(EnemyShip(1920, ENEMY_SHIP_SPRITES))
                         self.enemy_spawn_time = pygame.time.get_ticks()
                         # Increase max number of active enemies based on player score
-                        if self.score / 100 >= self.max_enemies:
+                        if self.score / 200 >= self.max_enemies:
                             self.max_enemies += 2
 
                     # Check kill count and spawn an advanced enemy for every 10 regular enemies killed
